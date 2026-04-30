@@ -167,22 +167,29 @@
         let municipios = [];
         let debounceTimer = null;
 
-        // Novo proxy mais estável para GitHub Pages
         const IBGE_URL = "https://api.codetabs.com/v1/proxy?quest=https://servicodados.ibge.gov.br/api/v1/localidades/municipios?orderBy=nome";
 
         async function carregarMunicipios() {
             try {
                 const response = await fetch(IBGE_URL);
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                
+
                 const data = await response.json();
-                
+
+                // Proteção contra dados inválidos + extração segura de UF
                 municipios = data.map(m => {
-                    const uf = m.microrregiao.mesorregiao.UF.sigla;
-                    return { nome: m.nome, uf: uf, texto: `${m.nome}, ${uf}` };
+                    let uf = '??';
+                    if (m.microrregiao && m.microrregiao.mesorregiao && m.microrregiao.mesorregiao.UF) {
+                        uf = m.microrregiao.mesorregiao.UF.sigla;
+                    }
+                    return { 
+                        nome: m.nome || 'Cidade desconhecida', 
+                        uf: uf, 
+                        texto: `${m.nome || 'Desconhecida'}, ${uf}` 
+                    };
                 });
 
-                console.log('%c✅ ' + municipios.length + ' cidades do IBGE carregadas com sucesso!', 'color: #cf30aa; font-weight: bold');
+                console.log('%c✅ ' + municipios.length + ' cidades carregadas com sucesso!', 'color: #cf30aa; font-weight: bold');
             } catch (error) {
                 console.error(error);
                 document.getElementById('results').innerHTML = `
@@ -205,7 +212,8 @@
 
             const termoLower = termo.toLowerCase().trim();
             const resultados = municipios.filter(m => 
-                m.nome.toLowerCase().includes(termoLower) || m.uf.toLowerCase().includes(termoLower)
+                m.nome.toLowerCase().includes(termoLower) || 
+                m.uf.toLowerCase().includes(termoLower)
             ).slice(0, 15);
 
             if (resultados.length === 0) {
@@ -256,7 +264,7 @@
                 }
             });
 
-            console.log('%c🚀 Projeto ODIN atualizado! Teste digitando "São", "Rio", "SP", "Belo"...', 'color: #cf30aa; font-size: 14px; font-weight: bold');
+            console.log('%c🚀 Projeto ODIN atualizado e corrigido! Teste digitando "São", "Rio", "SP", "Belo"...', 'color: #cf30aa; font-size: 14px; font-weight: bold');
         };
     </script>
 </body>
