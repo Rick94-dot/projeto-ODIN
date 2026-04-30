@@ -167,13 +167,13 @@
         let municipios = [];
         let debounceTimer = null;
 
-        // Novo proxy mais confiável (funciona bem com arquivos grandes)
-        const IBGE_URL = `https://api.allorigins.win/raw?url=${encodeURIComponent('https://servicodados.ibge.gov.br/api/v1/localidades/municipios?orderBy=nome')}`;
+        // Novo proxy mais estável para GitHub Pages
+        const IBGE_URL = "https://api.codetabs.com/v1/proxy?quest=https://servicodados.ibge.gov.br/api/v1/localidades/municipios?orderBy=nome";
 
         async function carregarMunicipios() {
             try {
                 const response = await fetch(IBGE_URL);
-                if (!response.ok) throw new Error('Falha na rede');
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
                 
                 const data = await response.json();
                 
@@ -182,10 +182,14 @@
                     return { nome: m.nome, uf: uf, texto: `${m.nome}, ${uf}` };
                 });
 
-                console.log('%c✅ ' + municipios.length + ' cidades carregadas com sucesso!', 'color: #cf30aa; font-weight: bold');
+                console.log('%c✅ ' + municipios.length + ' cidades do IBGE carregadas com sucesso!', 'color: #cf30aa; font-weight: bold');
             } catch (error) {
                 console.error(error);
-                document.getElementById('results').innerHTML = `<div class="no-results">⚠️ Erro ao carregar dados do IBGE<br><small>Tente novamente em alguns segundos</small></div>`;
+                document.getElementById('results').innerHTML = `
+                    <div class="no-results">
+                        ⚠️ Não foi possível carregar os dados do IBGE<br>
+                        <small>Tente recarregar a página (F5)</small>
+                    </div>`;
                 document.getElementById('results').classList.add('show');
             }
         }
@@ -252,7 +256,7 @@
                 }
             });
 
-            console.log('%c🚀 Projeto ODIN atualizado! Teste digitando "São", "Rio", "SP"...', 'color: #cf30aa; font-size: 14px; font-weight: bold');
+            console.log('%c🚀 Projeto ODIN atualizado! Teste digitando "São", "Rio", "SP", "Belo"...', 'color: #cf30aa; font-size: 14px; font-weight: bold');
         };
     </script>
 </body>
