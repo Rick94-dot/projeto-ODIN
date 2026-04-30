@@ -36,7 +36,7 @@
         }
 
         #poda {
-            position: relative;
+            position: relative;           /* importante para o dropdown ficar relativo a ele */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -45,6 +45,7 @@
             z-index: 10;
         }
 
+        /* === EFEITOS NEON (mantidos iguais) === */
         .glow, .darkBorderBg, .white, .border {
             position: absolute;
             max-height: 70px; max-width: 314px;
@@ -116,14 +117,28 @@
         #poda:hover #pink-mask { opacity: 0; }
         #main:focus-within #input-mask { display: none; }
 
+        /* === DROPDOWN DE RESULTADOS (AGORA ABAIXO DO CAMPO) === */
         #results {
-            position: absolute; top: 85px; width: 314px; max-height: 380px;
-            background: #0a0a0b; border-radius: 12px; border: 1px solid #2a2a35;
+            position: absolute;
+            top: 100%;           /* fica logo abaixo do #poda */
+            left: 0;
+            margin-top: 8px;
+            width: 314px;
+            max-height: 380px;
+            background: #0a0a0b;
+            border-radius: 12px;
+            border: 1px solid #2a2a35;
             box-shadow: 0 0 30px rgba(207, 48, 170, 0.3);
-            overflow-y: auto; z-index: 20; display: none; flex-direction: column;
-            padding: 8px 0; scrollbar-width: thin;
+            overflow-y: auto;
+            z-index: 20;
+            display: none;
+            flex-direction: column;
+            padding: 8px 0;
+            scrollbar-width: thin;
         }
+
         #results.show { display: flex; }
+
         .result-item {
             padding: 12px 20px; color: #e0e0e0; font-size: 15.5px;
             cursor: pointer; transition: all 0.2s ease; border-bottom: 1px solid rgba(255,255,255,0.05);
@@ -132,6 +147,10 @@
         .result-item .city { font-weight: 600; }
         .result-item .uf { color: #cf30aa; font-size: 13px; margin-left: 8px; }
         .no-results { padding: 20px; text-align: center; color: #888; font-size: 14px; }
+
+        @media (max-width: 480px) {
+            #poda, #results { width: 280px; }
+        }
     </style>
 </head>
 <body>
@@ -159,9 +178,10 @@
                 </svg>
             </div>
         </div>
-    </div>
 
-    <div id="results"></div>
+        <!-- Dropdown agora está dentro do container relativo -->
+        <div id="results"></div>
+    </div>
 
     <script>
         let municipios = [];
@@ -176,7 +196,6 @@
 
                 const data = await response.json();
 
-                // Proteção contra dados inválidos + extração segura de UF
                 municipios = data.map(m => {
                     let uf = '??';
                     if (m.microrregiao && m.microrregiao.mesorregiao && m.microrregiao.mesorregiao.UF) {
@@ -189,14 +208,10 @@
                     };
                 });
 
-                console.log('%c✅ ' + municipios.length + ' cidades carregadas com sucesso!', 'color: #cf30aa; font-weight: bold');
+                console.log('%c✅ ' + municipios.length + ' cidades carregadas!', 'color: #cf30aa; font-weight: bold');
             } catch (error) {
                 console.error(error);
-                document.getElementById('results').innerHTML = `
-                    <div class="no-results">
-                        ⚠️ Não foi possível carregar os dados do IBGE<br>
-                        <small>Tente recarregar a página (F5)</small>
-                    </div>`;
+                document.getElementById('results').innerHTML = `<div class="no-results">⚠️ Erro ao carregar dados do IBGE</div>`;
                 document.getElementById('results').classList.add('show');
             }
         }
@@ -212,8 +227,7 @@
 
             const termoLower = termo.toLowerCase().trim();
             const resultados = municipios.filter(m => 
-                m.nome.toLowerCase().includes(termoLower) || 
-                m.uf.toLowerCase().includes(termoLower)
+                m.nome.toLowerCase().includes(termoLower) || m.uf.toLowerCase().includes(termoLower)
             ).slice(0, 15);
 
             if (resultados.length === 0) {
@@ -227,13 +241,6 @@
             }
 
             resultsContainer.classList.add('show');
-
-            document.querySelectorAll('.result-item').forEach(item => {
-                item.addEventListener('click', () => {
-                    input.value = item.getAttribute('data-value');
-                    resultsContainer.classList.remove('show');
-                });
-            });
         }
 
         function debounce(func, delay) {
@@ -252,19 +259,16 @@
             input.addEventListener('input', debounce((e) => filtrarCidades(e.target.value), 250));
 
             input.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape') {
-                    resultsContainer.classList.remove('show');
-                    this.value = '';
-                }
+                if (e.key === 'Escape') resultsContainer.classList.remove('show');
             });
 
             document.addEventListener('click', function(e) {
-                if (!document.getElementById('poda').contains(e.target) && !resultsContainer.contains(e.target)) {
+                if (!document.getElementById('poda').contains(e.target)) {
                     resultsContainer.classList.remove('show');
                 }
             });
 
-            console.log('%c🚀 Projeto ODIN atualizado e corrigido! Teste digitando "São", "Rio", "SP", "Belo"...', 'color: #cf30aa; font-size: 14px; font-weight: bold');
+            console.log('%c🚀 Projeto ODIN - Dropdown agora aparece ABAIXO!', 'color: #cf30aa; font-size: 14px; font-weight: bold');
         };
     </script>
 </body>
