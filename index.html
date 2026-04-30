@@ -167,12 +167,14 @@
         let municipios = [];
         let debounceTimer = null;
 
-        // Proxy CORS confiável para GitHub Pages
-        const IBGE_URL = "https://corsproxy.io/?https://servicodados.ibge.gov.br/api/v1/localidades/municipios?orderBy=nome";
+        // Novo proxy mais confiável (funciona bem com arquivos grandes)
+        const IBGE_URL = `https://api.allorigins.win/raw?url=${encodeURIComponent('https://servicodados.ibge.gov.br/api/v1/localidades/municipios?orderBy=nome')}`;
 
         async function carregarMunicipios() {
             try {
                 const response = await fetch(IBGE_URL);
+                if (!response.ok) throw new Error('Falha na rede');
+                
                 const data = await response.json();
                 
                 municipios = data.map(m => {
@@ -180,10 +182,10 @@
                     return { nome: m.nome, uf: uf, texto: `${m.nome}, ${uf}` };
                 });
 
-                console.log('%c✅ ' + municipios.length + ' cidades carregadas!', 'color: #cf30aa; font-weight: bold');
+                console.log('%c✅ ' + municipios.length + ' cidades carregadas com sucesso!', 'color: #cf30aa; font-weight: bold');
             } catch (error) {
                 console.error(error);
-                document.getElementById('results').innerHTML = `<div class="no-results">⚠️ Erro ao carregar cidades do IBGE</div>`;
+                document.getElementById('results').innerHTML = `<div class="no-results">⚠️ Erro ao carregar dados do IBGE<br><small>Tente novamente em alguns segundos</small></div>`;
                 document.getElementById('results').classList.add('show');
             }
         }
@@ -250,7 +252,7 @@
                 }
             });
 
-            console.log('%c🚀 Projeto ODIN no ar! Teste digitando "São", "Rio", "SP"...', 'color: #cf30aa; font-size: 14px; font-weight: bold');
+            console.log('%c🚀 Projeto ODIN atualizado! Teste digitando "São", "Rio", "SP"...', 'color: #cf30aa; font-size: 14px; font-weight: bold');
         };
     </script>
 </body>
