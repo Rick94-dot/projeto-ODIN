@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Busca Neon • IBGE</title>
+    <title>Projeto ODIN • Busca IBGE</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
 
@@ -131,12 +131,7 @@
         .result-item:hover { background: rgba(207, 48, 170, 0.15); color: white; padding-left: 24px; }
         .result-item .city { font-weight: 600; }
         .result-item .uf { color: #cf30aa; font-size: 13px; margin-left: 8px; }
-        .no-results { padding: 20px; text-align: center; color: #666; font-size: 14px; }
-
-        @media (max-width: 480px) {
-            #poda, #results { width: 280px; }
-            #results { top: 78px; }
-        }
+        .no-results { padding: 20px; text-align: center; color: #888; font-size: 14px; }
     </style>
 </head>
 <body>
@@ -172,8 +167,8 @@
         let municipios = [];
         let debounceTimer = null;
 
-        // URL direta do IBGE (funciona perfeitamente no GitHub Pages)
-        const IBGE_URL = "https://servicodados.ibge.gov.br/api/v1/localidades/municipios?orderBy=nome";
+        // Proxy CORS confiável para GitHub Pages
+        const IBGE_URL = "https://corsproxy.io/?https://servicodados.ibge.gov.br/api/v1/localidades/municipios?orderBy=nome";
 
         async function carregarMunicipios() {
             try {
@@ -185,10 +180,10 @@
                     return { nome: m.nome, uf: uf, texto: `${m.nome}, ${uf}` };
                 });
 
-                console.log('%c✅ ' + municipios.length + ' cidades do IBGE carregadas com sucesso!', 'color: #cf30aa; font-weight: bold');
+                console.log('%c✅ ' + municipios.length + ' cidades carregadas!', 'color: #cf30aa; font-weight: bold');
             } catch (error) {
                 console.error(error);
-                document.getElementById('results').innerHTML = `<div class="no-results">Erro ao carregar dados do IBGE</div>`;
+                document.getElementById('results').innerHTML = `<div class="no-results">⚠️ Erro ao carregar cidades do IBGE</div>`;
                 document.getElementById('results').classList.add('show');
             }
         }
@@ -255,7 +250,7 @@
                 }
             });
 
-            console.log('%c🚀 Site no GitHub Pages pronto! Digite "São", "Rio", "SP"...', 'color: #cf30aa; font-size: 14px; font-weight: bold');
+            console.log('%c🚀 Projeto ODIN no ar! Teste digitando "São", "Rio", "SP"...', 'color: #cf30aa; font-size: 14px; font-weight: bold');
         };
     </script>
 </body>
