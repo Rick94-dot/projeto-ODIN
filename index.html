@@ -6,10 +6,13 @@
     <title>Projeto ODIN • Busca IBGE</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
         :root { --bg: #010201; }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
-            background: var(--bg);
+            background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
             height: 100vh;
             display: flex;
             align-items: center;
@@ -18,19 +21,62 @@
             font-family: 'Inter', system-ui, sans-serif;
             position: relative;
         }
+
+        /* === PARALLAX STAR BACKGROUND === */
+        #stars, #stars2, #stars3 {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: transparent;
+            z-index: -1;
+        }
+
+        #stars {
+            box-shadow: 
+                700px 300px #fff, 1200px 800px #fff, 300px 1200px #fff,
+                1500px 400px #fff, 200px 600px #fff, 1800px 900px #fff,
+                900px 150px #fff, 400px 1400px #fff, 1600px 200px #fff,
+                100px 800px #fff, 1300px 1100px #fff, 600px 300px #fff;
+            animation: animStar 80s linear infinite;
+        }
+
+        #stars2 {
+            box-shadow: 
+                800px 500px #fff, 300px 200px #fff, 1400px 700px #fff,
+                100px 1000px #fff, 1700px 300px #fff, 500px 1500px #fff,
+                1100px 800px #fff, 200px 400px #fff, 1600px 1200px #fff;
+            animation: animStar 120s linear infinite;
+        }
+
+        #stars3 {
+            box-shadow: 
+                400px 100px #fff, 1500px 600px #fff, 800px 1400px #fff,
+                200px 900px #fff, 1300px 200px #fff, 600px 1100px #fff,
+                1700px 400px #fff, 100px 300px #fff, 1100px 1500px #fff;
+            animation: animStar 160s linear infinite;
+        }
+
+        @keyframes animStar {
+            from { transform: translateY(0); }
+            to   { transform: translateY(-2000px); }
+        }
+
+        /* Grid sutil (mantida por baixo das estrelas) */
         .grid {
             position: absolute;
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
             width: 900px; height: 900px;
-            background-image:
-                linear-gradient(to right, #0f0f10 1px, transparent 1px),
-                linear-gradient(to bottom, #0f0f10 1px, transparent 1px);
+            background-image: 
+                linear-gradient(to right, rgba(15,15,16,0.3) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(15,15,16,0.3) 1px, transparent 1px);
             background-size: 1rem 1rem;
             filter: blur(1px);
             z-index: -2;
             pointer-events: none;
         }
+
+        /* === RESTO DO SEU DESIGN (barra neon) === */
         #poda {
             position: relative;
             display: flex;
@@ -40,12 +86,14 @@
             height: 70px;
             z-index: 10;
         }
+
         .glow, .darkBorderBg, .white, .border {
             position: absolute;
             max-height: 70px; max-width: 314px;
             height: 100%; width: 100%;
             overflow: hidden; border-radius: 12px; z-index: -1;
         }
+
         .glow { filter: blur(30px); opacity: 0.4; max-height: 130px; max-width: 354px; }
         .glow::before {
             content: ""; position: absolute; top: 50%; left: 50%;
@@ -54,6 +102,7 @@
             background-image: conic-gradient(#000, #402fb5 5%, #000 38%, #000 50%, #cf30aa 60%, #000 87%);
             transition: all 2s ease;
         }
+
         .darkBorderBg { max-height: 65px; max-width: 312px; }
         .darkBorderBg::before {
             content: ""; position: absolute; top: 50%; left: 50%;
@@ -62,6 +111,7 @@
             background-image: conic-gradient(rgba(0,0,0,0), #18116a, rgba(0,0,0,0) 10%, rgba(0,0,0,0) 50%, #6e1b60, rgba(0,0,0,0) 60%);
             transition: all 2s ease;
         }
+
         .white { max-height: 63px; max-width: 307px; border-radius: 10px; filter: blur(2px); }
         .white::before {
             content: ""; position: absolute; top: 50%; left: 50%;
@@ -70,6 +120,7 @@
             background-image: conic-gradient(rgba(0,0,0,0) 0%, #a099d8, rgba(0,0,0,0) 8%, rgba(0,0,0,0) 50%, #dfa2da, rgba(0,0,0,0) 58%);
             filter: brightness(1.4); transition: all 2s ease;
         }
+
         .border { max-height: 59px; max-width: 303px; border-radius: 11px; filter: blur(0.5px); }
         .border::before {
             content: ""; position: absolute; top: 50%; left: 50%;
@@ -78,6 +129,7 @@
             background-image: conic-gradient(#1c191c, #402fb5 5%, #1c191c 14%, #1c191c 50%, #cf30aa 60%, #1c191c 64%);
             filter: brightness(1.3); transition: all 2s ease;
         }
+
         #main { position: relative; width: 301px; height: 56px; }
         .input {
             background-color: #010201; border: none; width: 100%; height: 100%;
@@ -86,20 +138,26 @@
         }
         .input::placeholder { color: #c0b9c0; }
         .input:focus { outline: none; }
+
         #input-mask, #pink-mask { pointer-events: none; position: absolute; }
         #input-mask { width: 100px; height: 20px; background: linear-gradient(90deg, transparent, #010201); top: 18px; left: 70px; z-index: 2; }
         #pink-mask { width: 30px; height: 20px; background: #cf30aa; top: 10px; left: 5px; filter: blur(20px); opacity: 0.8; transition: all 2s ease; z-index: 1; }
+
         #search-icon { position: absolute; left: 20px; top: 16px; z-index: 3; }
+
         #poda:hover .glow::before,
         #poda:hover .darkBorderBg::before,
         #poda:hover .white::before,
         #poda:hover .border::before { transform: translate(-50%, -50%) rotate(240deg); }
+
         #poda:focus-within .glow::before,
         #poda:focus-within .darkBorderBg::before,
         #poda:focus-within .white::before,
         #poda:focus-within .border::before { transform: translate(-50%, -50%) rotate(420deg); transition-duration: 4s; }
+
         #poda:hover #pink-mask { opacity: 0; }
         #main:focus-within #input-mask { display: none; }
+
         #results {
             position: absolute;
             top: 100%;
@@ -127,22 +185,33 @@
         .result-item .city { font-weight: 600; }
         .result-item .uf { color: #cf30aa; font-size: 13px; margin-left: 8px; }
         .no-results { padding: 20px; text-align: center; color: #888; font-size: 14px; }
+
         @media (max-width: 480px) {
             #poda, #results { width: 280px; }
         }
     </style>
 </head>
 <body>
+    <!-- Background de estrelas parallax -->
+    <div id="stars"></div>
+    <div id="stars2"></div>
+    <div id="stars3"></div>
+
+    <!-- Grid sutil por cima das estrelas -->
     <div class="grid"></div>
+
+    <!-- Barra de busca -->
     <div id="poda">
         <div class="glow"></div>
         <div class="darkBorderBg"></div><div class="darkBorderBg"></div><div class="darkBorderBg"></div>
         <div class="white"></div>
         <div class="border"></div>
+
         <div id="main">
             <input type="text" class="input" placeholder="Digite cidade ou UF..." id="search-input">
             <div id="input-mask"></div>
             <div id="pink-mask"></div>
+
             <div id="search-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
                     <circle stroke="url(#search)" r="8" cy="11" cx="11"/>
@@ -154,17 +223,17 @@
                 </svg>
             </div>
         </div>
+
         <div id="results"></div>
     </div>
 
     <script>
+        /* Seu script atual (com busca sem acento) */
         let municipios = [];
         let debounceTimer = null;
 
-        // Proxy que estava funcionando para você
         const IBGE_URL = "https://api.codetabs.com/v1/proxy?quest=https://servicodados.ibge.gov.br/api/v1/localidades/municipios?orderBy=nome";
 
-        // Remove acentos (São → Sao, João → Joao, etc.)
         function removerAcentos(str) {
             return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         }
@@ -188,8 +257,6 @@
                 console.log('%c✅ ' + municipios.length + ' cidades carregadas!', 'color: #cf30aa; font-weight: bold');
             } catch (error) {
                 console.error(error);
-                document.getElementById('results').innerHTML = `<div class="no-results">⚠️ Erro ao carregar dados do IBGE</div>`;
-                document.getElementById('results').classList.add('show');
             }
         }
 
@@ -245,8 +312,6 @@
                     resultsContainer.classList.remove('show');
                 }
             });
-
-            console.log('%c🚀 Projeto ODIN atualizado - agora aceita "Sao", "Joao", "Belem", etc.', 'color: #cf30aa; font-size: 14px; font-weight: bold');
         };
     </script>
 </body>
