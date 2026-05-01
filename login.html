@@ -427,25 +427,15 @@
             errorMsg.classList.remove('show');
 
             try {
-                // ── Quando o backend estiver pronto, substitua por: ──
-                // const res = await fetch('https://sua-api.com/login', {
-                //     method: 'POST',
-                //     headers: { 'Content-Type': 'application/json' },
-                //     body: JSON.stringify({ usuario, senha })
-                // });
-                // const data = await res.json();
-                // if (!res.ok) throw new Error(data.message || 'Erro');
-                // localStorage.setItem('odin_token', data.token);
-                // window.location.href = 'index.html';
-
-                // ── Simulação temporária (remova quando tiver backend) ──
-                await new Promise(r => setTimeout(r, 1000));
-                if (usuario === 'admin' && senha === 'odin2025') {
-                    localStorage.setItem('odin_token', 'simulado_' + Date.now());
-                    window.location.href = '/projeto-ODIN/index.html';
-                } else {
-                    throw new Error('Usuário ou senha incorretos.');
-                }
+                const res = await fetch('https://odin-backend-rv69.onrender.com/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: usuario, password: senha })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || 'Usuário ou senha incorretos.');
+                localStorage.setItem('odin_token', data.token);
+                window.location.href = '/projeto-ODIN/index.html';
 
             } catch (err) {
                 mostrarErro(err.message || 'Erro ao conectar. Tente novamente.');
