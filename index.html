@@ -334,6 +334,60 @@
         }
         .checkbox-wrapper:has(input:checked) .label { color: var(--pink); }
 
+        /* Specialty dropdown */
+        #specialty-section {
+            overflow: hidden;
+            max-height: 0;
+            opacity: 0;
+            transition: max-height 0.4s cubic-bezier(0.4,0,0.2,1),
+                        opacity   0.3s ease,
+                        margin    0.4s ease;
+            margin-top: 0;
+        }
+        #specialty-section.show {
+            max-height: 120px;
+            opacity: 1;
+            margin-top: 14px;
+        }
+
+        .specialty-label {
+            text-align: center;
+            color: var(--pink);
+            font-family: 'Syne', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+
+        #specialty-select {
+            width: 100%;
+            padding: 11px 14px;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid rgba(207,48,170,0.4);
+            border-radius: 10px;
+            color: white;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23cf30aa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        #specialty-select:focus {
+            outline: none;
+            border-color: var(--pink);
+            box-shadow: 0 0 12px rgba(207,48,170,0.4);
+        }
+        #specialty-select option {
+            background: #0a0a0b;
+            color: white;
+        }
+
         /* Botão Buscar */
         #btn-buscar {
             width: 100%;
@@ -348,14 +402,23 @@
             letter-spacing: 1.5px;
             text-transform: uppercase;
             cursor: pointer;
+            overflow: hidden;
+            max-height: 0;
             opacity: 0;
-            transform: translateY(4px);
-            transition: opacity 0.25s ease, transform 0.25s ease, filter 0.2s ease;
+            padding-top: 0; padding-bottom: 0;
+            margin-top: 0;
+            transition: max-height 0.4s cubic-bezier(0.4,0,0.2,1),
+                        opacity   0.3s ease,
+                        padding   0.4s ease,
+                        margin    0.4s ease,
+                        filter    0.2s ease;
             pointer-events: none;
         }
         #btn-buscar.show {
+            max-height: 60px;
             opacity: 1;
-            transform: translateY(0);
+            padding: 12px;
+            margin-top: 10px;
             pointer-events: all;
         }
         #btn-buscar:hover { filter: brightness(1.2); }
@@ -402,9 +465,26 @@
         <!-- Painel de Operadoras -->
         <div id="operator-panel">
             <div class="panel-title">Selecione a operadora</div>
-            <div class="operators-grid" id="operators-grid">
-                <!-- Gerado via JS para facilitar manutenção -->
+            <div class="operators-grid" id="operators-grid"></div>
+
+            <!-- Especialidade (aparece após selecionar operadora) -->
+            <div id="specialty-section">
+                <div class="specialty-label">Especialidade odontológica</div>
+                <select id="specialty-select">
+                    <option value="" disabled selected>Selecione uma especialidade...</option>
+                    <option value="clinico-geral">Clínico Geral</option>
+                    <option value="ortodontia">Ortodontia</option>
+                    <option value="endodontia">Endodontia</option>
+                    <option value="periodontia">Periodontia</option>
+                    <option value="implantodontia">Implantodontia</option>
+                    <option value="odontopediatria">Odontopediatria</option>
+                    <option value="cirurgia-buco">Cirurgia Bucomaxilofacial</option>
+                    <option value="protese">Prótese Dentária</option>
+                    <option value="radiologia">Radiologia Odontológica</option>
+                    <option value="estomatologia">Estomatologia</option>
+                </select>
             </div>
+
             <button id="btn-buscar" aria-label="Iniciar busca">Buscar</button>
         </div>
     </div>
@@ -426,14 +506,16 @@
 
         /* ── Elementos ───────────────────────────────────── */
         const $ = id => document.getElementById(id);
-        const input        = $('search-input');
-        const results      = $('results');
-        const clearBtn     = $('clear-btn');
-        const searchIcon   = $('search-icon');
-        const poda         = $('poda');
-        const operatorPanel= $('operator-panel');
-        const btnBuscar    = $('btn-buscar');
-        const logoImg      = $('logo-img');
+        const input          = $('search-input');
+        const results        = $('results');
+        const clearBtn       = $('clear-btn');
+        const searchIcon     = $('search-icon');
+        const poda           = $('poda');
+        const operatorPanel  = $('operator-panel');
+        const specialtySection = $('specialty-section');
+        const specialtySelect  = $('specialty-select');
+        const btnBuscar      = $('btn-buscar');
+        const logoImg        = $('logo-img');
 
         /* ── Logo fallback ───────────────────────────────── */
         logoImg.addEventListener('error', () => logoImg.classList.add('broken'));
@@ -548,8 +630,9 @@
             fecharResults();
             operatorPanel.classList.remove('show');
             poda.classList.remove('city-selected');
+            specialtySection.classList.remove('show');
             btnBuscar.classList.remove('show');
-            // desmarca radio
+            specialtySelect.value = '';
             document.querySelectorAll('#operators-grid input').forEach(r => r.checked = false);
             toggleClearBtn();
             input.focus();
@@ -560,10 +643,21 @@
             clearBtn.classList.toggle('show', input.value.length > 0);
         }
 
-        /* ── Botão Buscar (aparece quando ≥1 operadora marcada) ── */
+        /* ── Cascata: operadora → especialidade → buscar ──── */
         function atualizarBtnBuscar() {
             const algumaMarcada = !!document.querySelector('#operators-grid input:checked');
-            btnBuscar.classList.toggle('show', algumaMarcada);
+            // mostra o dropdown de especialidade
+            specialtySection.classList.toggle('show', algumaMarcada);
+            // se desmarcou operadora, esconde tudo abaixo
+            if (!algumaMarcada) {
+                btnBuscar.classList.remove('show');
+                specialtySelect.value = '';
+            }
+        }
+
+        function atualizarBuscar() {
+            const temEspecialidade = specialtySelect.value !== '';
+            btnBuscar.classList.toggle('show', temEspecialidade);
         }
 
         /* ── Renderiza operadoras ─────────────────────────── */
@@ -586,12 +680,13 @@
 
         /* ── Buscar ───────────────────────────────────────── */
         function executarBusca() {
-            const operadora = document.querySelector('#operators-grid input:checked')?.value;
-            if (!selectedCity || !operadora) return;
+            const operadora   = document.querySelector('#operators-grid input:checked')?.value;
+            const especialidade = specialtySelect.options[specialtySelect.selectedIndex]?.text;
+            if (!selectedCity || !operadora || !specialtySelect.value) return;
 
-            console.log('[ODIN] Busca:', { cidade: selectedCity, operadora });
-            // Exemplo: window.location.href = `resultados.html?cidade=${encodeURIComponent(selectedCity)}&op=${encodeURIComponent(operadora)}`;
-            alert(`Buscando:\n🏙️ ${selectedCity}\n🏥 ${operadora}`);
+            console.log('[ODIN] Busca:', { cidade: selectedCity, operadora, especialidade });
+            // Exemplo: window.location.href = `resultados.html?cidade=${encodeURIComponent(selectedCity)}&op=${encodeURIComponent(operadora)}&esp=${encodeURIComponent(specialtySelect.value)}`;
+            alert(`Buscando:\n🏙️ ${selectedCity}\n🏥 ${operadora}\n🦷 ${especialidade}`);
         }
 
         /* ── Debounce util ────────────────────────────────── */
@@ -611,7 +706,9 @@
                 selectedCity = null;
                 operatorPanel.classList.remove('show');
                 poda.classList.remove('city-selected');
+                specialtySection.classList.remove('show');
                 btnBuscar.classList.remove('show');
+                specialtySelect.value = '';
                 document.querySelectorAll('#operators-grid input').forEach(cb => cb.checked = false);
             }
         }, DEBOUNCE_MS);
@@ -624,8 +721,8 @@
         });
 
         clearBtn.addEventListener('click', limpar);
-
         btnBuscar.addEventListener('click', executarBusca);
+        specialtySelect.addEventListener('change', atualizarBuscar);
 
         input.addEventListener('keydown', e => {
             if (e.key === 'Escape') fecharResults();
