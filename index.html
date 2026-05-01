@@ -21,11 +21,11 @@
             position: relative;
         }
 
-        /* === LOGO FINAL (limpa e grande) === */
+        /* === LOGO MAIOR E MAIS PRÓXIMA === */
         .logo {
             position: absolute;
-            top: 60px;
-            width: 380px;
+            top: 45px;
+            width: 460px;           /* aumentado */
             z-index: 5;
         }
 
@@ -44,7 +44,7 @@
             50% { opacity: 0.3; }
         }
 
-        /* === BARRA NEON === */
+        /* === BARRA NEON (espaço reduzido) === */
         #poda {
             position: relative;
             display: flex;
@@ -55,7 +55,7 @@
             max-width: 620px;
             height: 70px;
             z-index: 10;
-            margin-top: 160px;
+            margin-top: 110px;        /* espaço reduzido entre logo e barra */
         }
 
         .glow, .darkBorderBg, .white, .border {
@@ -168,14 +168,14 @@
         .no-results { padding: 20px; text-align: center; color: #888; font-size: 14px; }
 
         @media (max-width: 480px) {
-            .logo { width: 280px; top: 40px; }
-            #poda { max-width: 90vw; }
+            .logo { width: 290px; top: 35px; }
+            #poda { max-width: 90vw; margin-top: 100px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Logo final (limpa) -->
+    <!-- Logo grande e limpa -->
     <img src="PROJETO ODIN LOGO FINAL.png" alt="Projeto ODIN" class="logo">
 
     <!-- Barra de busca -->
