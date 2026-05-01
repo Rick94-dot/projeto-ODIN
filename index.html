@@ -13,6 +13,7 @@
             background: #000;
             height: 100vh;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             overflow: hidden;
@@ -20,15 +21,13 @@
             position: relative;
         }
 
-        /* === LOGO VÍDEO (canto superior esquerdo) === */
-        .logo-video {
+        /* === LOGO ACIMA DA BARRA (grande e centralizada) === */
+        .logo {
             position: absolute;
-            top: 40px;
-            left: 40px;
-            width: 220px;
-            border-radius: 16px;
-            box-shadow: 0 0 40px rgba(207, 48, 170, 0.7);
+            top: 80px;
+            width: 320px;
             z-index: 5;
+            filter: drop-shadow(0 0 40px rgba(207, 48, 170, 0.6));
         }
 
         /* Estrelas dinâmicas */
@@ -46,7 +45,7 @@
             50% { opacity: 0.3; }
         }
 
-        /* === BARRA NEON (com expansão) === */
+        /* === BARRA NEON === */
         #poda {
             position: relative;
             display: flex;
@@ -57,6 +56,7 @@
             max-width: 620px;
             height: 70px;
             z-index: 10;
+            margin-top: 120px; /* espaço entre logo e barra */
         }
 
         .glow, .darkBorderBg, .white, .border {
@@ -169,19 +169,15 @@
         .no-results { padding: 20px; text-align: center; color: #888; font-size: 14px; }
 
         @media (max-width: 480px) {
-            .logo-video { width: 160px; top: 20px; left: 20px; }
+            .logo { width: 260px; top: 40px; }
             #poda { max-width: 90vw; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Logo em vídeo no canto superior esquerdo -->
-    <video class="logo-video" autoplay loop muted playsinline>
-        <source src="VÍDEO LOGO ODIN.mp4" type="video/mp4">
-        <!-- Fallback para o PNG caso o vídeo não carregue -->
-        <img src="LOGO ODIN.png" alt="Logo ODIN" style="width:100%; border-radius:16px;">
-    </video>
+    <!-- Logo PNG acima da barra -->
+    <img src="LOGO ODIN SEM FUNDO.png" alt="Logo ODIN" class="logo">
 
     <!-- Barra de busca -->
     <div id="poda">
@@ -213,7 +209,7 @@
     </div>
 
     <script>
-        // Estrelas + Busca + Botão X (código anterior)
+        // Estrelas + Busca + Botão X
         function createStars() {
             const numberOfStars = 350;
             for (let i = 0; i < numberOfStars; i++) {
