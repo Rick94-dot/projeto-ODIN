@@ -167,19 +167,25 @@
         let municipios = [];
         let debounceTimer = null;
 
-        // Proxy CORS para funcionar no GitHub Pages
-        const IBGE_URL = "https://corsproxy.io/?https://servicodados.ibge.gov.br/api/v1/localidades/municipios?orderBy=nome";
+        // Novo proxy mais confiável e que aceita payloads maiores
+        const IBGE_BASE = "https://servicodados.ibge.gov.br/api/v1/localidades/municipios?orderBy=nome";
+        const PROXY_URL = "https://api.allorigins.win/raw?url=" + encodeURIComponent(IBGE_BASE);
 
-        // Função que remove acentos (São → Sao, João → Joao, etc.)
         function removerAcentos(str) {
             return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         }
 
         async function carregarMunicipios() {
+            const resultsContainer = document.getElementById('results');
             try {
-                const response = await fetch(IBGE_URL);
-                const data = await response.json();
+                const response = await fetch(PROXY_URL);
                 
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                const data = await response.json();
+
+                if (!Array.isArray(data)) throw new Error("Dados inválidos");
+
                 municipios = data.map(m => {
                     const uf = m.microrregiao.mesorregiao.UF.sigla;
                     return { 
@@ -189,11 +195,15 @@
                     };
                 });
 
-                console.log('%c✅ ' + municipios.length + ' cidades carregadas (com busca sem acento)!', 'color: #cf30aa; font-weight: bold');
+                console.log('%c✅ ' + municipios.length + ' cidades carregadas com sucesso!', 'color: #cf30aa; font-weight: bold');
             } catch (error) {
                 console.error(error);
-                document.getElementById('results').innerHTML = `<div class="no-results">⚠️ Erro ao carregar cidades do IBGE</div>`;
-                document.getElementById('results').classList.add('show');
+                resultsContainer.innerHTML = `
+                    <div class="no-results">
+                        ⚠️ Não foi possível carregar as cidades do IBGE.<br>
+                        Tente novamente em alguns segundos.
+                    </div>`;
+                resultsContainer.classList.add('show');
             }
         }
 
@@ -261,8 +271,6 @@
                     resultsContainer.classList.remove('show');
                 }
             });
-
-            console.log('%c🚀 Projeto ODIN atualizado! Agora aceita "Sao", "Joao", "Belem", etc.', 'color: #cf30aa; font-size: 14px; font-weight: bold');
         };
     </script>
 </body>
