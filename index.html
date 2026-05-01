@@ -4,424 +4,645 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Projeto ODIN • Busca IBGE</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        /* ── Reset & Base ─────────────────────────────────── */
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --pink:   #cf30aa;
+            --blue:   #402fb5;
+            --green:  #00ff88;
+            --bg:     #000;
+            --surface:#0a0a0b;
+            --border: #2a2a35;
+            --text:   #e0e0e0;
+            --muted:  #888;
+        }
+
         body {
-            background: #000;
-            height: 100vh;
+            background: var(--bg);
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             overflow: hidden;
-            font-family: 'Inter', system-ui, sans-serif;
+            font-family: 'DM Sans', system-ui, sans-serif;
             position: relative;
         }
-        /* Logo */
+
+        /* ── Logo ─────────────────────────────────────────── */
         .logo {
             position: absolute;
             top: 45px;
             width: 460px;
             z-index: 5;
+            /* graceful fallback caso a imagem não carregue */
         }
-        /* Estrelas */
+        .logo-fallback {
+            position: absolute;
+            top: 38px;
+            font-family: 'Syne', sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: 8px;
+            color: white;
+            text-transform: uppercase;
+            z-index: 5;
+            display: none; /* só aparece se a imagem falhar */
+        }
+        .logo.broken { display: none; }
+        .logo.broken + .logo-fallback { display: block; }
+
+        /* ── Estrelas ─────────────────────────────────────── */
         .star {
             position: absolute;
             background: white;
             border-radius: 50%;
-            opacity: 0.8;
-            animation: twinkle 2s infinite ease-in-out;
-            z-index: -1;
+            opacity: 0.7;
+            animation: twinkle var(--dur, 2s) infinite ease-in-out var(--delay, 0s);
+            pointer-events: none;
+            z-index: 0;
         }
         @keyframes twinkle {
-            0%, 100% { opacity: 0.8; }
-            50% { opacity: 0.3; }
+            0%, 100% { opacity: 0.7; transform: scale(1); }
+            50%       { opacity: 0.2; transform: scale(0.7); }
         }
-        /* Barra de busca */
+
+        /* ── Barra de busca ───────────────────────────────── */
         #poda {
             position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
-            width: auto;
-            min-width: 314px;
-            max-width: 620px;
+            width: 340px;
             height: 70px;
             z-index: 10;
             margin-top: 160px;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: margin-top 0.45s cubic-bezier(0.4,0,0.2,1),
+                        opacity   0.45s ease;
         }
         #poda.city-selected {
-            margin-top: 90px;
+            margin-top: 80px;
             opacity: 0.93;
         }
+
+        /* Camadas de brilho */
         .glow, .darkBorderBg, .white, .border {
             position: absolute;
             height: 100%; width: 100%;
             overflow: hidden; border-radius: 12px; z-index: -1;
         }
-        .glow { filter: blur(30px); opacity: 0.4; max-height: 130px; max-width: 680px; }
-        .glow::before { content: ""; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(60deg); width: 999px; height: 999px; background-image: conic-gradient(#000, #402fb5 5%, #000 38%, #000 50%, #cf30aa 60%, #000 87%); transition: all 2s ease; }
-        .darkBorderBg { max-height: 65px; max-width: 640px; }
-        .darkBorderBg::before { content: ""; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(82deg); width: 600px; height: 600px; background-image: conic-gradient(rgba(0,0,0,0), #18116a, rgba(0,0,0,0) 10%, rgba(0,0,0,0) 50%, #6e1b60, rgba(0,0,0,0) 60%); transition: all 2s ease; }
-        .white { max-height: 63px; max-width: 635px; border-radius: 10px; filter: blur(2px); }
-        .white::before { content: ""; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(83deg); width: 600px; height: 600px; background-image: conic-gradient(rgba(0,0,0,0) 0%, #a099d8, rgba(0,0,0,0) 8%, rgba(0,0,0,0) 50%, #dfa2da, rgba(0,0,0,0) 58%); filter: brightness(1.4); transition: all 2s ease; }
-        .border { max-height: 59px; max-width: 630px; border-radius: 11px; filter: blur(0.5px); }
-        .border::before { content: ""; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(70deg); width: 600px; height: 600px; background-image: conic-gradient(#1c191c, #402fb5 5%, #1c191c 14%, #1c191c 50%, #cf30aa 60%, #1c191c 64%); filter: brightness(1.3); transition: all 2s ease; }
-        #main { position: relative; width: 100%; min-width: 301px; height: 56px; }
+        .glow { filter: blur(30px); opacity: 0.4; max-height: 130px; max-width: 400px; }
+        .glow::before {
+            content: ""; position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%,-50%) rotate(60deg);
+            width: 999px; height: 999px;
+            background-image: conic-gradient(#000, #402fb5 5%, #000 38%, #000 50%, #cf30aa 60%, #000 87%);
+            transition: transform 2s ease;
+        }
+        .darkBorderBg { max-height: 65px; max-width: 360px; }
+        .darkBorderBg::before {
+            content: ""; position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%,-50%) rotate(82deg);
+            width: 600px; height: 600px;
+            background-image: conic-gradient(rgba(0,0,0,0), #18116a, rgba(0,0,0,0) 10%, rgba(0,0,0,0) 50%, #6e1b60, rgba(0,0,0,0) 60%);
+            transition: transform 2s ease;
+        }
+        .white { max-height: 63px; max-width: 355px; border-radius: 10px; filter: blur(2px); }
+        .white::before {
+            content: ""; position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%,-50%) rotate(83deg);
+            width: 600px; height: 600px;
+            background-image: conic-gradient(rgba(0,0,0,0) 0%, #a099d8, rgba(0,0,0,0) 8%, rgba(0,0,0,0) 50%, #dfa2da, rgba(0,0,0,0) 58%);
+            filter: brightness(1.4);
+            transition: transform 2s ease;
+        }
+        .border { max-height: 59px; max-width: 350px; border-radius: 11px; filter: blur(0.5px); }
+        .border::before {
+            content: ""; position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%,-50%) rotate(70deg);
+            width: 600px; height: 600px;
+            background-image: conic-gradient(#1c191c, #402fb5 5%, #1c191c 14%, #1c191c 50%, #cf30aa 60%, #1c191c 64%);
+            filter: brightness(1.3);
+            transition: transform 2s ease;
+        }
+
+        #poda:hover .glow::before,
+        #poda:hover .darkBorderBg::before,
+        #poda:hover .white::before,
+        #poda:hover .border::before { transform: translate(-50%,-50%) rotate(240deg); }
+
+        #poda:focus-within .glow::before,
+        #poda:focus-within .darkBorderBg::before,
+        #poda:focus-within .white::before,
+        #poda:focus-within .border::before {
+            transform: translate(-50%,-50%) rotate(420deg);
+            transition-duration: 4s;
+        }
+
+        /* Input wrapper */
+        #main { position: relative; width: 100%; height: 56px; }
+
         .input {
-            background-color: #010201;
+            background: #010201;
             border: none;
-            width: 100%;
-            height: 100%;
+            width: 100%; height: 100%;
             border-radius: 10px;
             color: white;
-            padding-left: 59px;
-            padding-right: 55px;
-            font-size: 18px;
+            padding: 0 50px 0 52px;
+            font-size: 17px;
+            font-family: 'DM Sans', sans-serif;
             font-weight: 500;
-            letter-spacing: 0.3px;
+            letter-spacing: 0.2px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
         .input::placeholder { color: #c0b9c0; }
         .input:focus { outline: none; }
-        #search-icon { position: absolute; left: 20px; top: 16px; z-index: 3; }
+
+        #search-icon { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); z-index: 3; }
+
+        /* Loading spinner no ícone de busca */
+        #search-icon .spinner {
+            display: none;
+            width: 24px; height: 24px;
+            border: 2.5px solid rgba(255,255,255,0.2);
+            border-top-color: var(--pink);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+        #search-icon.loading svg  { display: none; }
+        #search-icon.loading .spinner { display: block; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
         #clear-btn {
             position: absolute;
-            right: 18px;
-            top: 50%;
+            right: 16px; top: 50%;
             transform: translateY(-50%);
-            color: #cf30aa;
-            font-size: 22px;
+            color: var(--pink);
+            font-size: 18px;
             cursor: pointer;
             z-index: 4;
-            width: 28px;
-            height: 28px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 28px; height: 28px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 50%;
             opacity: 0;
-            transition: all 0.2s ease;
+            transition: opacity 0.2s ease, background 0.2s ease;
         }
         #clear-btn.show { opacity: 1; }
-        #poda:hover .glow::before,
-        #poda:hover .darkBorderBg::before,
-        #poda:hover .white::before,
-        #poda:hover .border::before { transform: translate(-50%, -50%) rotate(240deg); }
-        #poda:focus-within .glow::before,
-        #poda:focus-within .darkBorderBg::before,
-        #poda:focus-within .white::before,
-        #poda:focus-within .border::before { transform: translate(-50%, -50%) rotate(420deg); transition-duration: 4s; }
-        #poda:hover #pink-mask { opacity: 0; }
+        #clear-btn:hover { background: rgba(207,48,170,0.15); }
 
-        /* Resultados */
+        /* ── Dropdown de resultados ───────────────────────── */
         #results {
             position: absolute;
-            top: 100%;
+            top: calc(100% + 8px);
             left: 0;
-            margin-top: 8px;
-            width: 314px;
-            max-height: 380px;
-            background: #0a0a0b;
+            width: 100%;
+            max-height: 320px;
+            background: var(--surface);
             border-radius: 12px;
-            border: 1px solid #2a2a35;
-            box-shadow: 0 0 30px rgba(207, 48, 170, 0.3);
+            border: 1px solid var(--border);
+            box-shadow: 0 0 30px rgba(207,48,170,0.25);
             overflow-y: auto;
             z-index: 20;
             display: none;
             flex-direction: column;
-            padding: 8px 0;
+            padding: 6px 0;
             scrollbar-width: thin;
+            scrollbar-color: var(--pink) transparent;
         }
         #results.show { display: flex; }
-        .result-item {
-            padding: 12px 20px; color: #e0e0e0; font-size: 15.5px;
-            cursor: pointer; transition: all 0.2s ease; border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-        .result-item:hover { background: rgba(207, 48, 170, 0.15); color: white; padding-left: 24px; }
-        .result-item .city { font-weight: 600; }
-        .result-item .uf { color: #cf30aa; font-size: 13px; margin-left: 8px; }
-        .no-results { padding: 20px; text-align: center; color: #888; font-size: 14px; }
 
-        /* Painel de Operadoras - Neon Checkbox */
+        .result-item {
+            padding: 11px 18px;
+            color: var(--text);
+            font-size: 15px;
+            font-family: 'DM Sans', sans-serif;
+            cursor: pointer;
+            transition: background 0.15s ease, padding-left 0.15s ease;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .result-item:last-child { border-bottom: none; }
+        .result-item:hover { background: rgba(207,48,170,0.14); padding-left: 22px; }
+        .result-item .city { font-weight: 600; font-family: 'Syne', sans-serif; font-size: 14.5px; }
+        .result-item .uf {
+            color: var(--pink);
+            font-size: 11.5px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            background: rgba(207,48,170,0.12);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        .no-results { padding: 18px; text-align: center; color: var(--muted); font-size: 14px; }
+
+        /* ── Painel de Operadoras ─────────────────────────── */
         #operator-panel {
             position: absolute;
-            top: 100%;
+            top: calc(100% + 10px);
             left: 0;
-            margin-top: 12px;
-            width: 314px;
+            width: 100%;
             background: rgba(10,10,11,0.98);
             border-radius: 16px;
-            border: 1px solid rgba(207,48,170,0.5);
-            box-shadow: 0 0 40px rgba(207,48,170,0.6);
-            padding: 20px;
+            border: 1px solid rgba(207,48,170,0.45);
+            box-shadow: 0 0 40px rgba(207,48,170,0.5);
+            padding: 20px 20px 16px;
             z-index: 30;
-            display: none;
+
+            /* animação de entrada */
             opacity: 0;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateY(-6px);
+            pointer-events: none;
+            transition: opacity 0.35s ease, transform 0.35s ease;
         }
         #operator-panel.show {
-            display: block;
             opacity: 1;
+            transform: translateY(0);
+            pointer-events: all;
         }
-        #operator-panel .subtitle {
+
+        .panel-title {
             text-align: center;
-            color: #cf30aa;
-            font-size: 15px;
-            margin-bottom: 18px;
+            color: var(--pink);
+            font-family: 'Syne', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
+            margin-bottom: 16px;
         }
+
+        .operators-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        /* Checkbox neon */
         .checkbox-wrapper {
             display: flex;
             align-items: center;
-            padding: 12px 0;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 10px;
             cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.06);
+            transition: border-color 0.2s ease, background 0.2s ease;
         }
+        .checkbox-wrapper:hover { background: rgba(0,255,136,0.05); border-color: rgba(0,255,136,0.25); }
         .checkbox-wrapper input { position: absolute; opacity: 0; width: 0; height: 0; }
+
         .checkmark {
-            width: 26px;
-            height: 26px;
-            border: 2px solid rgba(0,255,136,0.7);
-            border-radius: 8px;
-            background: rgba(0,0,0,0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            width: 22px; height: 22px;
+            border: 2px solid rgba(0,255,136,0.5);
+            border-radius: 6px;
+            background: rgba(0,0,0,0.4);
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.3s cubic-bezier(0.68,-0.55,0.265,1.55);
         }
         .checkbox-wrapper input:checked ~ .checkmark {
-            border-color: #00ff88;
-            box-shadow: 0 0 20px rgba(0,255,136,0.6);
+            border-color: var(--green);
+            background: rgba(0,255,136,0.1);
+            box-shadow: 0 0 14px rgba(0,255,136,0.5);
         }
         .checkmark svg {
-            width: 0; height: 0; color: #111;
-            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            width: 0; height: 0;
+            color: var(--green);
+            transition: all 0.3s cubic-bezier(0.68,-0.55,0.265,1.55);
         }
-        .checkbox-wrapper input:checked ~ .checkmark svg {
-            width: 18px; height: 18px;
-        }
-        .label {
-            margin-left: 16px;
-            color: white;
-            font-size: 17px;
-        }
-        .checkbox-wrapper:hover .label { color: #00ff88; }
+        .checkbox-wrapper input:checked ~ .checkmark svg { width: 14px; height: 14px; }
 
+        .label {
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            font-family: 'DM Sans', sans-serif;
+            user-select: none;
+        }
+        .checkbox-wrapper:has(input:checked) .label { color: var(--green); }
+
+        /* Botão Buscar */
+        #btn-buscar {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--blue), var(--pink));
+            color: white;
+            font-family: 'Syne', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            cursor: pointer;
+            opacity: 0;
+            transform: translateY(4px);
+            transition: opacity 0.25s ease, transform 0.25s ease, filter 0.2s ease;
+            pointer-events: none;
+        }
+        #btn-buscar.show {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: all;
+        }
+        #btn-buscar:hover { filter: brightness(1.2); }
+        #btn-buscar:active { filter: brightness(0.9); transform: scale(0.98); }
+
+        /* ── Responsivo ───────────────────────────────────── */
         @media (max-width: 480px) {
-            .logo { width: 290px; top: 35px; }
-            #poda, #results, #operator-panel { max-width: 90vw; }
+            .logo { width: 75vw; top: 30px; }
+            #poda { width: min(90vw, 340px); }
         }
     </style>
 </head>
 <body>
 
-    <img src="PROJETO ODIN LOGO FINAL.png" alt="Projeto ODIN" class="logo">
+    <img src="PROJETO ODIN LOGO FINAL.png" alt="Projeto ODIN" class="logo" id="logo-img">
+    <div class="logo-fallback">PROJETO ODIN</div>
 
     <div id="poda">
         <div class="glow"></div>
-        <div class="darkBorderBg"></div><div class="darkBorderBg"></div><div class="darkBorderBg"></div>
+        <div class="darkBorderBg"></div>
+        <div class="darkBorderBg"></div>
+        <div class="darkBorderBg"></div>
         <div class="white"></div>
         <div class="border"></div>
+
         <div id="main">
-            <input type="text" class="input" placeholder="Digite cidade ou UF..." id="search-input">
-            <div id="input-mask"></div>
-            <div id="pink-mask"></div>
+            <input type="text" class="input" placeholder="Cidade ou UF..." id="search-input" autocomplete="off" spellcheck="false">
             <div id="search-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
-                    <circle stroke="url(#search)" r="8" cy="11" cx="11"/>
-                    <line stroke="url(#searchl)" y2="16.65" y1="22" x2="16.65" x1="22"/>
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
+                    <circle stroke="url(#sg)" r="8" cy="11" cx="11"/>
+                    <line stroke="url(#sl)" y2="16.65" y1="22" x2="16.65" x1="22"/>
                     <defs>
-                        <linearGradient gradientTransform="rotate(50)" id="search"><stop stop-color="#f8e7f8" offset="0%"/><stop stop-color="#b6a9b7" offset="50%"/></linearGradient>
-                        <linearGradient id="searchl"><stop stop-color="#b6a9b7" offset="0%"/><stop stop-color="#837484" offset="50%"/></linearGradient>
+                        <linearGradient gradientTransform="rotate(50)" id="sg"><stop stop-color="#f8e7f8" offset="0%"/><stop stop-color="#b6a9b7" offset="50%"/></linearGradient>
+                        <linearGradient id="sl"><stop stop-color="#b6a9b7" offset="0%"/><stop stop-color="#837484" offset="50%"/></linearGradient>
                     </defs>
                 </svg>
+                <div class="spinner"></div>
             </div>
-            <div id="clear-btn">✕</div>
+            <div id="clear-btn" role="button" aria-label="Limpar busca">✕</div>
         </div>
-        <div id="results"></div>
-    </div>
 
-    <!-- Painel de Operadoras -->
-    <div id="operator-panel">
-        <div class="subtitle">selecione uma operadora</div>
-        
-        <label class="checkbox-wrapper">
-            <input type="checkbox">
-            <div class="checkmark">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M20 6L9 17L4 12"/>
-                </svg>
-            </div>
-            <span class="label">Metlife</span>
-        </label>
+        <div id="results" role="listbox" aria-label="Cidades encontradas"></div>
 
-        <label class="checkbox-wrapper">
-            <input type="checkbox">
-            <div class="checkmark">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M20 6L9 17L4 12"/>
-                </svg>
+        <!-- Painel de Operadoras -->
+        <div id="operator-panel">
+            <div class="panel-title">Selecione a operadora</div>
+            <div class="operators-grid" id="operators-grid">
+                <!-- Gerado via JS para facilitar manutenção -->
             </div>
-            <span class="label">Unimed</span>
-        </label>
-
-        <label class="checkbox-wrapper">
-            <input type="checkbox">
-            <div class="checkmark">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M20 6L9 17L4 12"/>
-                </svg>
-            </div>
-            <span class="label">Odontoprev</span>
-        </label>
-
-        <label class="checkbox-wrapper">
-            <input type="checkbox">
-            <div class="checkmark">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M20 6L9 17L4 12"/>
-                </svg>
-            </div>
-            <span class="label">Hapvida</span>
-        </label>
+            <button id="btn-buscar" aria-label="Iniciar busca">Buscar</button>
+        </div>
     </div>
 
     <script>
-        function createStars() {
-            const numberOfStars = 350;
-            for (let i = 0; i < numberOfStars; i++) {
-                const star = document.createElement('div');
-                star.classList.add('star');
-                const size = Math.random() * 3 + 1;
-                star.style.width = `${size}px`;
-                star.style.height = `${size}px`;
-                star.style.left = `${Math.random() * 100}vw`;
-                star.style.top = `${Math.random() * 100}vh`;
-                star.style.animationDuration = `${Math.random() * 3 + 1}s`;
-                document.body.appendChild(star);
-            }
-        }
+    (() => {
+        'use strict';
 
+        /* ── Config ──────────────────────────────────────── */
+        const IBGE_API = 'https://servicodados.ibge.gov.br/api/v1/localidades/municipios?orderBy=nome';
+        const OPERADORAS = ['Metlife', 'Unimed', 'Odontoprev', 'Hapvida'];
+        const MAX_RESULTS = 12;
+        const DEBOUNCE_MS = 220;
+
+        /* ── Estado ──────────────────────────────────────── */
         let municipios = [];
         let debounceTimer = null;
+        let selectedCity = null;
 
-        const IBGE_URL = "https://api.codetabs.com/v1/proxy?quest=https://servicodados.ibge.gov.br/api/v1/localidades/municipios?orderBy=nome";
+        /* ── Elementos ───────────────────────────────────── */
+        const $ = id => document.getElementById(id);
+        const input        = $('search-input');
+        const results      = $('results');
+        const clearBtn     = $('clear-btn');
+        const searchIcon   = $('search-icon');
+        const poda         = $('poda');
+        const operatorPanel= $('operator-panel');
+        const btnBuscar    = $('btn-buscar');
+        const logoImg      = $('logo-img');
 
-        function removerAcentos(str) {
-            return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        }
+        /* ── Logo fallback ───────────────────────────────── */
+        logoImg.addEventListener('error', () => logoImg.classList.add('broken'));
 
-        async function carregarMunicipios() {
-            try {
-                const response = await fetch(IBGE_URL);
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                const data = await response.json();
-                municipios = data.map(m => {
-                    let uf = '??';
-                    if (m.microrregiao && m.microrregiao.mesorregiao && m.microrregiao.mesorregiao.UF) {
-                        uf = m.microrregiao.mesorregiao.UF.sigla;
-                    }
-                    return { nome: m.nome, uf: uf, texto: `${m.nome}, ${uf}` };
+        /* ── Estrelas ────────────────────────────────────── */
+        function createStars(n = 280) {
+            const frag = document.createDocumentFragment();
+            for (let i = 0; i < n; i++) {
+                const s = document.createElement('div');
+                s.className = 'star';
+                const size = Math.random() * 2.5 + 0.5;
+                Object.assign(s.style, {
+                    width:  `${size}px`,
+                    height: `${size}px`,
+                    left:   `${Math.random() * 100}vw`,
+                    top:    `${Math.random() * 100}vh`,
+                    '--dur':   `${(Math.random() * 3 + 1).toFixed(2)}s`,
+                    '--delay': `${(Math.random() * 3).toFixed(2)}s`,
                 });
-            } catch (error) { console.error(error); }
+                frag.appendChild(s);
+            }
+            document.body.appendChild(frag);
         }
 
-        function filtrarCidades(termo) {
-            const resultsContainer = document.getElementById('results');
-            const input = document.getElementById('search-input');
-           
+        /* ── Normalização ─────────────────────────────────── */
+        function normalize(str) {
+            return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+        }
+
+        /* ── Carrega municípios direto no IBGE ────────────── */
+        async function carregarMunicipios() {
+            searchIcon.classList.add('loading');
+            try {
+                const res  = await fetch(IBGE_API);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const data = await res.json();
+                municipios = data.map(m => {
+                    const uf = m.microrregiao?.mesorregiao?.UF?.sigla ?? '?';
+                    return {
+                        nome:      m.nome,
+                        uf,
+                        texto:     `${m.nome}, ${uf}`,
+                        nomeNorm:  normalize(m.nome),
+                        ufNorm:    uf.toLowerCase(),
+                    };
+                });
+            } catch (err) {
+                console.error('[ODIN] Falha ao carregar municípios:', err);
+            } finally {
+                searchIcon.classList.remove('loading');
+            }
+        }
+
+        /* ── Filtragem otimizada ──────────────────────────── */
+        function filtrar(termo) {
             if (!termo || termo.length < 2) {
-                resultsContainer.classList.remove('show');
+                fecharResults();
                 return;
             }
+            const t = normalize(termo);
+            const isUF = t.length <= 2;
 
-            const termoLower = termo.toLowerCase().trim();
-            const termoSemAcento = removerAcentos(termoLower);
+            const lista = municipios.filter(m =>
+                isUF
+                    ? m.ufNorm.startsWith(t)
+                    : m.nomeNorm.includes(t) || m.ufNorm.includes(t)
+            );
 
-            const resultados = municipios.filter(m =>
-                removerAcentos(m.nome.toLowerCase()).includes(termoSemAcento) || 
-                m.uf.toLowerCase().includes(termoLower)
-            ).slice(0, 15);
+            // Ordena: começa com o termo > contém o termo
+            lista.sort((a, b) => {
+                const aStart = a.nomeNorm.startsWith(t) ? 0 : 1;
+                const bStart = b.nomeNorm.startsWith(t) ? 0 : 1;
+                return aStart - bStart || a.nome.localeCompare(b.nome, 'pt-BR');
+            });
 
-            if (resultados.length === 0) {
-                resultsContainer.innerHTML = `<div class="no-results">Nenhuma cidade encontrada para "<strong>${termo}</strong>"</div>`;
-            } else {
-                resultsContainer.innerHTML = resultados.map(r => `
-                    <div class="result-item" data-value="${r.texto}">
-                        <span class="city">${r.nome}</span><span class="uf">${r.uf}</span>
-                    </div>
-                `).join('');
-            }
-            resultsContainer.classList.add('show');
+            renderResults(lista.slice(0, MAX_RESULTS), termo);
         }
 
-        function selectCity(cityText) {
-            const input = document.getElementById('search-input');
-            const poda = document.getElementById('poda');
-            const results = document.getElementById('results');
-            const operatorPanel = document.getElementById('operator-panel');
+        function renderResults(lista, termo) {
+            if (lista.length === 0) {
+                results.innerHTML = `<div class="no-results">Nenhuma cidade encontrada para "<strong>${termo}</strong>"</div>`;
+            } else {
+                results.innerHTML = lista.map(r =>
+                    `<div class="result-item" role="option" data-value="${r.texto}">
+                        <span class="city">${r.nome}</span>
+                        <span class="uf">${r.uf}</span>
+                    </div>`
+                ).join('');
+            }
+            results.classList.add('show');
+        }
 
-            input.value = cityText;
+        function fecharResults() {
             results.classList.remove('show');
+            results.innerHTML = '';
+        }
+
+        /* ── Seleção de cidade ────────────────────────────── */
+        function selecionarCidade(texto) {
+            selectedCity = texto;
+            input.value  = texto;
+            fecharResults();
             poda.classList.add('city-selected');
             operatorPanel.classList.add('show');
+            toggleClearBtn();
         }
 
-        function toggleClearButton() {
-            const input = document.getElementById('search-input');
-            const clearBtn = document.getElementById('clear-btn');
-            if (input.value.trim().length > 0) {
-                clearBtn.classList.add('show');
-            } else {
-                clearBtn.classList.remove('show');
+        /* ── Limpar tudo ──────────────────────────────────── */
+        function limpar() {
+            selectedCity = null;
+            input.value  = '';
+            fecharResults();
+            operatorPanel.classList.remove('show');
+            poda.classList.remove('city-selected');
+            btnBuscar.classList.remove('show');
+            // desmarca checkboxes
+            document.querySelectorAll('#operators-grid input').forEach(cb => cb.checked = false);
+            toggleClearBtn();
+            input.focus();
+        }
+
+        /* ── Botão limpar ─────────────────────────────────── */
+        function toggleClearBtn() {
+            clearBtn.classList.toggle('show', input.value.length > 0);
+        }
+
+        /* ── Botão Buscar (aparece quando ≥1 operadora marcada) ── */
+        function atualizarBtnBuscar() {
+            const algumaMarcada = [...document.querySelectorAll('#operators-grid input')].some(cb => cb.checked);
+            btnBuscar.classList.toggle('show', algumaMarcada);
+        }
+
+        /* ── Renderiza operadoras ─────────────────────────── */
+        function renderOperadoras() {
+            const grid = $('operators-grid');
+            grid.innerHTML = OPERADORAS.map(op => `
+                <label class="checkbox-wrapper">
+                    <input type="checkbox" value="${op}">
+                    <div class="checkmark">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 6L9 17L4 12"/>
+                        </svg>
+                    </div>
+                    <span class="label">${op}</span>
+                </label>
+            `).join('');
+
+            grid.addEventListener('change', atualizarBtnBuscar);
+        }
+
+        /* ── Buscar ───────────────────────────────────────── */
+        function executarBusca() {
+            const operadoras = [...document.querySelectorAll('#operators-grid input:checked')].map(cb => cb.value);
+            if (!selectedCity || operadoras.length === 0) return;
+
+            // Aqui você pode redirecionar, fazer fetch, ou emitir evento
+            console.log('[ODIN] Busca:', { cidade: selectedCity, operadoras });
+            // Exemplo: window.location.href = `resultados.html?cidade=${encodeURIComponent(selectedCity)}&ops=${operadoras.join(',')}`;
+            alert(`Buscando:\n🏙️ ${selectedCity}\n🏥 ${operadoras.join(', ')}`);
+        }
+
+        /* ── Debounce util ────────────────────────────────── */
+        function debounce(fn, ms) {
+            return (...args) => {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => fn(...args), ms);
+            };
+        }
+
+        /* ── Event listeners ──────────────────────────────── */
+        const onInput = debounce(() => {
+            filtrar(input.value);
+            toggleClearBtn();
+            // se o usuário edita depois de selecionar cidade, reseta o painel
+            if (selectedCity && input.value !== selectedCity) {
+                selectedCity = null;
+                operatorPanel.classList.remove('show');
+                poda.classList.remove('city-selected');
+                btnBuscar.classList.remove('show');
+                document.querySelectorAll('#operators-grid input').forEach(cb => cb.checked = false);
             }
-        }
+        }, DEBOUNCE_MS);
 
-        window.onload = async function() {
-            createStars();
-            await carregarMunicipios();
+        input.addEventListener('input', onInput);
 
-            const input = document.getElementById('search-input');
-            const resultsContainer = document.getElementById('results');
-            const clearBtn = document.getElementById('clear-btn');
+        results.addEventListener('click', e => {
+            const item = e.target.closest('.result-item');
+            if (item) selecionarCidade(item.dataset.value);
+        });
 
-            input.addEventListener('input', () => {
-                filtrarCidades(input.value);
-                toggleClearButton();
-                document.getElementById('operator-panel').classList.remove('show');
-                document.getElementById('poda').classList.remove('city-selected');
-            });
+        clearBtn.addEventListener('click', limpar);
 
-            resultsContainer.addEventListener('click', function(e) {
-                if (e.target.closest('.result-item')) {
-                    const item = e.target.closest('.result-item');
-                    selectCity(item.getAttribute('data-value'));
-                }
-            });
+        btnBuscar.addEventListener('click', executarBusca);
 
-            clearBtn.addEventListener('click', () => {
-                input.value = '';
-                resultsContainer.classList.remove('show');
-                document.getElementById('operator-panel').classList.remove('show');
-                document.getElementById('poda').classList.remove('city-selected');
-                toggleClearButton();
-                input.focus();
-            });
+        input.addEventListener('keydown', e => {
+            if (e.key === 'Escape') fecharResults();
+        });
 
-            input.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape') resultsContainer.classList.remove('show');
-            });
+        // Fecha resultados ao clicar fora
+        document.addEventListener('click', e => {
+            if (!poda.contains(e.target)) fecharResults();
+        });
 
-            document.addEventListener('click', function(e) {
-                if (!document.getElementById('poda').contains(e.target)) {
-                    resultsContainer.classList.remove('show');
-                }
-            });
-        };
+        /* ── Init ─────────────────────────────────────────── */
+        createStars();
+        renderOperadoras();
+        carregarMunicipios();
+
+    })();
     </script>
 </body>
 </html>
