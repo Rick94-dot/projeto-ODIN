@@ -389,58 +389,126 @@
         }
         .checkbox-wrapper:has(input:checked) .label { color: #f0c0d8; }
 
+        /* ── "Todas" operadoras toggle ────────────────────── */
+        .all-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            padding: 7px 0 12px;
+            cursor: pointer;
+            font-family: 'Syne', sans-serif;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #556677;
+            transition: color 0.2s ease;
+            user-select: none;
+        }
+        .all-toggle:hover { color: #a0b8c8; }
+        .all-toggle.active { color: var(--blue); }
+        .all-dot {
+            width: 14px; height: 14px;
+            border: 1.5px solid rgba(37,120,153,0.4);
+            border-radius: 4px;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.25s ease;
+            flex-shrink: 0;
+        }
+        .all-toggle.active .all-dot {
+            background: rgba(37,120,153,0.25);
+            border-color: var(--blue);
+            box-shadow: 0 0 8px rgba(37,120,153,0.4);
+        }
+        .all-dot-inner {
+            width: 6px; height: 6px;
+            border-radius: 2px;
+            background: var(--blue);
+            opacity: 0; transform: scale(0);
+            transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        .all-toggle.active .all-dot-inner { opacity: 1; transform: scale(1); }
+
         /* ── Especialidade ────────────────────────────────── */
         #specialty-section {
             overflow: hidden;
             max-height: 0;
             opacity: 0;
             margin-top: 0;
-            transition: max-height 0.45s cubic-bezier(0.22,1,0.36,1),
+            transition: max-height 0.5s cubic-bezier(0.22,1,0.36,1),
                         opacity    0.35s ease 0.05s,
-                        margin-top 0.45s ease;
+                        margin-top 0.5s ease;
         }
         #specialty-section.show {
-            max-height: 120px;
+            max-height: 260px;
             opacity: 1;
-            margin-top: 12px;
+            margin-top: 10px;
         }
 
+        .specialty-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 9px;
+        }
         .specialty-label {
-            text-align: center;
             font-family: 'Syne', sans-serif;
             font-size: 10px;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 2.5px;
-            margin-bottom: 9px;
             background: var(--grad-r);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-
-        #specialty-select {
-            width: 100%;
-            padding: 11px 36px 11px 14px;
-            background: rgba(0,0,0,0.45);
-            border: 1px solid rgba(37,120,153,0.35);
-            border-radius: 10px;
-            color: #c8d8e0;
+        .all-esp-btn {
             font-family: 'DM Sans', sans-serif;
-            font-size: 13.5px;
+            font-size: 11px;
+            color: #556677;
             cursor: pointer;
-            appearance: none;
-            -webkit-appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23257899' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 12px center;
-            transition: border-color 0.25s ease, box-shadow 0.25s ease;
+            padding: 3px 8px;
+            border-radius: 5px;
+            border: 1px solid rgba(218,72,149,0.15);
+            transition: all 0.2s ease;
+            user-select: none;
         }
-        #specialty-select:focus {
-            outline: none;
-            border-color: var(--blue);
-            box-shadow: 0 0 0 3px rgba(37,120,153,0.2), 0 0 20px rgba(37,120,153,0.15);
+        .all-esp-btn:hover { color: var(--pink); border-color: rgba(218,72,149,0.45); }
+        .all-esp-btn.active { color: var(--pink); border-color: var(--pink); background: rgba(218,72,149,0.1); }
+
+        /* chips */
+        .chips-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            padding-bottom: 2px;
         }
-        #specialty-select option { background: #080b0d; color: #c8d8e0; }
+        .chip {
+            padding: 5px 11px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.06);
+            background: rgba(255,255,255,0.025);
+            color: #7a8a98;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 11.5px;
+            font-weight: 500;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s cubic-bezier(0.22,1,0.36,1);
+            white-space: nowrap;
+        }
+        .chip:hover {
+            border-color: rgba(218,72,149,0.4);
+            color: #c8a8b8;
+            background: rgba(218,72,149,0.07);
+            transform: translateY(-1px);
+        }
+        .chip.selected {
+            border-color: var(--pink);
+            background: rgba(218,72,149,0.14);
+            color: #f0c0d8;
+            box-shadow: 0 0 10px rgba(218,72,149,0.2);
+        }
 
         /* ── Botão Buscar ─────────────────────────────────── */
         #btn-buscar {
@@ -534,22 +602,19 @@
             <div class="panel-title">Selecione a operadora</div>
             <div class="operators-grid" id="operators-grid"></div>
 
-            <!-- Especialidade (aparece após selecionar operadora) -->
+            <!-- Todas as operadoras -->
+            <div class="all-toggle" id="all-ops-toggle">
+                <div class="all-dot"><div class="all-dot-inner"></div></div>
+                Todas as operadoras
+            </div>
+
+            <!-- Especialidade -->
             <div id="specialty-section">
-                <div class="specialty-label">Especialidade odontológica</div>
-                <select id="specialty-select">
-                    <option value="" disabled selected>Selecione uma especialidade...</option>
-                    <option value="clinico-geral">Clínico Geral</option>
-                    <option value="ortodontia">Ortodontia</option>
-                    <option value="endodontia">Endodontia</option>
-                    <option value="periodontia">Periodontia</option>
-                    <option value="implantodontia">Implantodontia</option>
-                    <option value="odontopediatria">Odontopediatria</option>
-                    <option value="cirurgia-buco">Cirurgia Bucomaxilofacial</option>
-                    <option value="protese">Prótese Dentária</option>
-                    <option value="radiologia">Radiologia Odontológica</option>
-                    <option value="estomatologia">Estomatologia</option>
-                </select>
+                <div class="specialty-header">
+                    <span class="specialty-label">Especialidade</span>
+                    <span class="all-esp-btn" id="all-esp-btn">Todas</span>
+                </div>
+                <div class="chips-grid" id="chips-grid"></div>
             </div>
 
             <button id="btn-buscar" aria-label="Iniciar busca">Buscar</button>
@@ -563,6 +628,18 @@
         /* ── Config ──────────────────────────────────────── */
         const IBGE_API = 'https://servicodados.ibge.gov.br/api/v1/localidades/municipios?orderBy=nome';
         const OPERADORAS = ['Metlife', 'Unimed', 'Odontoprev', 'Hapvida'];
+        const ESPECIALIDADES = [
+            { label: 'Clínico Geral',   value: 'clinico-geral' },
+            { label: 'Ortodontia',      value: 'ortodontia' },
+            { label: 'Endodontia',      value: 'endodontia' },
+            { label: 'Periodontia',     value: 'periodontia' },
+            { label: 'Implantes',       value: 'implantodontia' },
+            { label: 'Odontopediatria', value: 'odontopediatria' },
+            { label: 'Cirurgia',        value: 'cirurgia-buco' },
+            { label: 'Prótese',         value: 'protese' },
+            { label: 'Radiologia',      value: 'radiologia' },
+            { label: 'Estomatologia',   value: 'estomatologia' },
+        ];
         const MAX_RESULTS = 12;
         const DEBOUNCE_MS = 220;
 
@@ -570,6 +647,9 @@
         let municipios = [];
         let debounceTimer = null;
         let selectedCity = null;
+        let selectedEsps = new Set(); // especialidades selecionadas
+        let todasEsps = false;
+        let todasOps  = false;
 
         /* ── Elementos ───────────────────────────────────── */
         const $ = id => document.getElementById(id);
@@ -580,7 +660,9 @@
         const poda           = $('poda');
         const operatorPanel  = $('operator-panel');
         const specialtySection = $('specialty-section');
-        const specialtySelect  = $('specialty-select');
+        const allOpsToggle   = $('all-ops-toggle');
+        const allEspBtn      = $('all-esp-btn');
+        const chipsGrid      = $('chips-grid');
         const btnBuscar      = $('btn-buscar');
         const logoImg        = $('logo-img');
 
@@ -706,8 +788,13 @@
             poda.classList.remove('city-selected');
             specialtySection.classList.remove('show');
             btnBuscar.classList.remove('show');
-            specialtySelect.value = '';
+            selectedEsps.clear();
+            todasEsps = false;
+            todasOps  = false;
+            allOpsToggle.classList.remove('active');
+            allEspBtn.classList.remove('active');
             document.querySelectorAll('#operators-grid input').forEach(r => r.checked = false);
+            document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
             toggleClearBtn();
             input.focus();
         }
@@ -717,29 +804,33 @@
             clearBtn.classList.toggle('show', input.value.length > 0);
         }
 
-        /* ── Cascata: operadora → especialidade → buscar ──── */
-        function atualizarBtnBuscar() {
-            const algumaMarcada = !!document.querySelector('#operators-grid input:checked');
-            // mostra o dropdown de especialidade
-            specialtySection.classList.toggle('show', algumaMarcada);
-            // se desmarcou operadora, esconde tudo abaixo
-            if (!algumaMarcada) {
-                btnBuscar.classList.remove('show');
-                specialtySelect.value = '';
-            }
-        }
-
+        /* ── Atualiza visibilidade do botão Buscar ─────────── */
         function atualizarBuscar() {
-            const temEspecialidade = specialtySelect.value !== '';
-            btnBuscar.classList.toggle('show', temEspecialidade);
+            const temOp  = todasOps || !!document.querySelector('#operators-grid input:checked');
+            const temEsp = todasEsps || selectedEsps.size > 0;
+            btnBuscar.classList.toggle('show', temOp && temEsp);
         }
 
-        /* ── Renderiza operadoras ─────────────────────────── */
+        /* ── Cascata: operadora selecionada → mostra especialidade */
+        function atualizarEspecialidade() {
+            const temOp = todasOps || !!document.querySelector('#operators-grid input:checked');
+            specialtySection.classList.toggle('show', temOp);
+            if (!temOp) {
+                selectedEsps.clear();
+                todasEsps = false;
+                allEspBtn.classList.remove('active');
+                document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+                btnBuscar.classList.remove('show');
+            }
+            atualizarBuscar();
+        }
+
+        /* ── Renderiza operadoras (checkbox múltiplo) ─────── */
         function renderOperadoras() {
             const grid = $('operators-grid');
             grid.innerHTML = OPERADORAS.map(op => `
                 <label class="checkbox-wrapper">
-                    <input type="radio" name="operadora" value="${op}">
+                    <input type="checkbox" value="${op}">
                     <div class="checkmark">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M20 6L9 17L4 12"/>
@@ -748,19 +839,68 @@
                     <span class="label">${op}</span>
                 </label>
             `).join('');
-
-            grid.addEventListener('change', atualizarBtnBuscar);
+            grid.addEventListener('change', () => {
+                // se marcou alguma individualmente, desmarca "todas"
+                todasOps = false;
+                allOpsToggle.classList.remove('active');
+                atualizarEspecialidade();
+            });
         }
+
+        /* ── Toggle "Todas as operadoras" ─────────────────── */
+        allOpsToggle.addEventListener('click', () => {
+            todasOps = !todasOps;
+            allOpsToggle.classList.toggle('active', todasOps);
+            // desmarca individuais se ativou "todas"
+            if (todasOps) {
+                document.querySelectorAll('#operators-grid input').forEach(cb => cb.checked = false);
+            }
+            atualizarEspecialidade();
+        });
+
+        /* ── Renderiza chips de especialidade ─────────────── */
+        function renderChips() {
+            chipsGrid.innerHTML = ESPECIALIDADES.map(e => `
+                <div class="chip" data-value="${e.value}">${e.label}</div>
+            `).join('');
+
+            chipsGrid.addEventListener('click', e => {
+                const chip = e.target.closest('.chip');
+                if (!chip) return;
+                // se "todas" estava ativa, desativa
+                todasEsps = false;
+                allEspBtn.classList.remove('active');
+                chip.classList.toggle('selected');
+                const val = chip.dataset.value;
+                selectedEsps.has(val) ? selectedEsps.delete(val) : selectedEsps.add(val);
+                atualizarBuscar();
+            });
+        }
+
+        /* ── Toggle "Todas" especialidades ────────────────── */
+        allEspBtn.addEventListener('click', () => {
+            todasEsps = !todasEsps;
+            allEspBtn.classList.toggle('active', todasEsps);
+            if (todasEsps) {
+                selectedEsps.clear();
+                document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+            }
+            atualizarBuscar();
+        });
 
         /* ── Buscar ───────────────────────────────────────── */
         function executarBusca() {
-            const operadora   = document.querySelector('#operators-grid input:checked')?.value;
-            const especialidade = specialtySelect.options[specialtySelect.selectedIndex]?.text;
-            if (!selectedCity || !operadora || !specialtySelect.value) return;
+            const ops = todasOps
+                ? OPERADORAS
+                : [...document.querySelectorAll('#operators-grid input:checked')].map(cb => cb.value);
+            const esps = todasEsps
+                ? ESPECIALIDADES.map(e => e.value)
+                : [...selectedEsps];
+            if (!selectedCity || ops.length === 0 || esps.length === 0) return;
 
-            console.log('[ODIN] Busca:', { cidade: selectedCity, operadora, especialidade });
-            // Exemplo: window.location.href = `resultados.html?cidade=${encodeURIComponent(selectedCity)}&op=${encodeURIComponent(operadora)}&esp=${encodeURIComponent(specialtySelect.value)}`;
-            alert(`Buscando:\n🏙️ ${selectedCity}\n🏥 ${operadora}\n🦷 ${especialidade}`);
+            console.log('[ODIN] Busca:', { cidade: selectedCity, operadoras: ops, especialidades: esps });
+            // → aqui vai a chamada à API futuramente
+            alert(`🏙️ ${selectedCity}\n🏥 ${ops.join(', ')}\n🦷 ${esps.join(', ')}`);
         }
 
         /* ── Debounce util ────────────────────────────────── */
@@ -782,8 +922,12 @@
                 poda.classList.remove('city-selected');
                 specialtySection.classList.remove('show');
                 btnBuscar.classList.remove('show');
-                specialtySelect.value = '';
+                selectedEsps.clear();
+                todasEsps = false; todasOps = false;
+                allOpsToggle.classList.remove('active');
+                allEspBtn.classList.remove('active');
                 document.querySelectorAll('#operators-grid input').forEach(cb => cb.checked = false);
+                document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
             }
         }, DEBOUNCE_MS);
 
@@ -796,7 +940,6 @@
 
         clearBtn.addEventListener('click', limpar);
         btnBuscar.addEventListener('click', executarBusca);
-        specialtySelect.addEventListener('change', atualizarBuscar);
 
         input.addEventListener('keydown', e => {
             if (e.key === 'Escape') fecharResults();
@@ -810,6 +953,7 @@
         /* ── Init ─────────────────────────────────────────── */
         createStars();
         renderOperadoras();
+        renderChips();
         carregarMunicipios();
 
     })();
