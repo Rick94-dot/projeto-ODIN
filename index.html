@@ -131,7 +131,12 @@
         .result-item:hover { background: rgba(207, 48, 170, 0.15); color: white; padding-left: 24px; }
         .result-item .city { font-weight: 600; }
         .result-item .uf { color: #cf30aa; font-size: 13px; margin-left: 8px; }
-        .no-results { padding: 20px; text-align: center; color: #888; font-size: 14px; }
+        .no-results { 
+            padding: 30px 20px; 
+            text-align: center; 
+            color: #ff6666; 
+            font-size: 15px;
+        }
     </style>
 </head>
 <body>
@@ -167,9 +172,9 @@
         let municipios = [];
         let debounceTimer = null;
 
-        // Novo proxy mais confiável e que aceita payloads maiores
+        // Proxy mais estável no momento
         const IBGE_BASE = "https://servicodados.ibge.gov.br/api/v1/localidades/municipios?orderBy=nome";
-        const PROXY_URL = "https://api.allorigins.win/raw?url=" + encodeURIComponent(IBGE_BASE);
+        const PROXY_URL = "https://corsproxy.io/?" + encodeURIComponent(IBGE_BASE);
 
         function removerAcentos(str) {
             return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -180,11 +185,9 @@
             try {
                 const response = await fetch(PROXY_URL);
                 
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                if (!response.ok) throw new Error(`Erro ${response.status}`);
 
                 const data = await response.json();
-
-                if (!Array.isArray(data)) throw new Error("Dados inválidos");
 
                 municipios = data.map(m => {
                     const uf = m.microrregiao.mesorregiao.UF.sigla;
@@ -197,11 +200,12 @@
 
                 console.log('%c✅ ' + municipios.length + ' cidades carregadas com sucesso!', 'color: #cf30aa; font-weight: bold');
             } catch (error) {
-                console.error(error);
+                console.error("Erro ao carregar IBGE:", error);
                 resultsContainer.innerHTML = `
                     <div class="no-results">
-                        ⚠️ Não foi possível carregar as cidades do IBGE.<br>
-                        Tente novamente em alguns segundos.
+                        ⚠️ Não foi possível conectar com o IBGE no momento.<br><br>
+                        <strong>Tente atualizar a página (F5) em alguns segundos.</strong><br>
+                        Proxy temporariamente instável.
                     </div>`;
                 resultsContainer.classList.add('show');
             }
@@ -260,14 +264,12 @@
             input.addEventListener('input', debounce((e) => filtrarCidades(e.target.value), 250));
 
             input.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape') {
-                    resultsContainer.classList.remove('show');
-                    this.value = '';
-                }
+                if (e.key === 'Escape') resultsContainer.classList.remove('show');
             });
 
             document.addEventListener('click', function(e) {
-                if (!document.getElementById('poda').contains(e.target) && !resultsContainer.contains(e.target)) {
+                if (!document.getElementById('poda').contains(e.target) && 
+                    !resultsContainer.contains(e.target)) {
                     resultsContainer.classList.remove('show');
                 }
             });
