@@ -21,15 +21,15 @@
             position: relative;
         }
 
-        /* === LOGO MAIOR E MAIS PRÓXIMA === */
+        /* Logo */
         .logo {
             position: absolute;
             top: 45px;
-            width: 460px;           /* aumentado */
+            width: 380px;
             z-index: 5;
         }
 
-        /* Estrelas dinâmicas */
+        /* Estrelas */
         .star {
             position: absolute;
             background: white;
@@ -38,13 +38,12 @@
             animation: twinkle 2s infinite ease-in-out;
             z-index: -1;
         }
-
         @keyframes twinkle {
             0%, 100% { opacity: 0.8; }
             50% { opacity: 0.3; }
         }
 
-        /* === BARRA NEON (espaço reduzido) === */
+        /* Barra de busca */
         #poda {
             position: relative;
             display: flex;
@@ -55,7 +54,14 @@
             max-width: 620px;
             height: 70px;
             z-index: 10;
-            margin-top: 110px;        /* espaço reduzido entre logo e barra */
+            margin-top: 160px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Quando cidade é selecionada */
+        #poda.city-selected {
+            margin-top: 80px;
+            opacity: 0.95;
         }
 
         .glow, .darkBorderBg, .white, .border {
@@ -67,7 +73,7 @@
             z-index: -1;
         }
 
-        .glow { filter: blur(30px); opacity: 0.4; max-height: 130px; max-width: 680px; }
+        .glow { filter: blur(30px); opacity: 0.4; }
         .glow::before { content: ""; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(60deg); width: 999px; height: 999px; background-image: conic-gradient(#000, #402fb5 5%, #000 38%, #000 50%, #cf30aa 60%, #000 87%); transition: all 2s ease; }
 
         .darkBorderBg { max-height: 65px; max-width: 640px; }
@@ -93,9 +99,6 @@
             font-size: 18px;
             font-weight: 500;
             letter-spacing: 0.3px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
         }
 
         .input::placeholder { color: #c0b9c0; }
@@ -126,59 +129,88 @@
         }
         #clear-btn.show { opacity: 1; }
 
-        #poda:hover .glow::before,
-        #poda:hover .darkBorderBg::before,
-        #poda:hover .white::before,
-        #poda:hover .border::before { transform: translate(-50%, -50%) rotate(240deg); }
-
-        #poda:focus-within .glow::before,
-        #poda:focus-within .darkBorderBg::before,
-        #poda:focus-within .white::before,
-        #poda:focus-within .border::before { transform: translate(-50%, -50%) rotate(420deg); transition-duration: 4s; }
-
-        #poda:hover #pink-mask { opacity: 0; }
-
-        #results {
+        /* === PAINEL DE OPERADORAS (neon) === */
+        #operator-panel {
             position: absolute;
             top: 100%;
             left: 0;
-            margin-top: 8px;
+            margin-top: 12px;
             width: 314px;
-            max-height: 380px;
-            background: #0a0a0b;
-            border-radius: 12px;
-            border: 1px solid #2a2a35;
-            box-shadow: 0 0 30px rgba(207, 48, 170, 0.3);
-            overflow-y: auto;
-            z-index: 20;
+            background: rgba(10, 10, 11, 0.95);
+            border-radius: 16px;
+            border: 1px solid rgba(207, 48, 170, 0.4);
+            box-shadow: 0 0 40px rgba(207, 48, 170, 0.5);
+            padding: 20px;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 30;
             display: none;
-            flex-direction: column;
-            padding: 8px 0;
-            scrollbar-width: thin;
         }
-        #results.show { display: flex; }
 
-        .result-item {
-            padding: 12px 20px; color: #e0e0e0; font-size: 15.5px;
-            cursor: pointer; transition: all 0.2s ease; border-bottom: 1px solid rgba(255,255,255,0.05);
+        #operator-panel.show {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
         }
-        .result-item:hover { background: rgba(207, 48, 170, 0.15); color: white; padding-left: 24px; }
-        .result-item .city { font-weight: 600; }
-        .result-item .uf { color: #cf30aa; font-size: 13px; margin-left: 8px; }
-        .no-results { padding: 20px; text-align: center; color: #888; font-size: 14px; }
+
+        #operator-panel .subtitle {
+            text-align: center;
+            color: #cf30aa;
+            font-size: 15px;
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .operator-item {
+            display: flex;
+            align-items: center;
+            padding: 14px 18px;
+            margin-bottom: 8px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px solid rgba(207, 48, 170, 0.3);
+            border-radius: 12px;
+            color: white;
+            font-size: 17px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .operator-item:hover {
+            border-color: #cf30aa;
+            background: rgba(207, 48, 170, 0.15);
+            transform: translateX(4px);
+        }
+
+        .operator-item.selected {
+            border-color: #cf30aa;
+            background: rgba(207, 48, 170, 0.25);
+            box-shadow: 0 0 20px rgba(207, 48, 170, 0.6);
+        }
+
+        .operator-item .checkmark {
+            margin-left: auto;
+            font-size: 20px;
+            opacity: 0;
+            transition: all 0.3s;
+        }
+
+        .operator-item.selected .checkmark {
+            opacity: 1;
+        }
 
         @media (max-width: 480px) {
-            .logo { width: 290px; top: 35px; }
-            #poda { max-width: 90vw; margin-top: 100px; }
+            .logo { width: 280px; top: 40px; }
+            #poda { max-width: 90vw; }
+            #operator-panel { width: 280px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Logo grande e limpa -->
     <img src="PROJETO ODIN LOGO FINAL.png" alt="Projeto ODIN" class="logo">
 
-    <!-- Barra de busca -->
     <div id="poda">
         <div class="glow"></div>
         <div class="darkBorderBg"></div><div class="darkBorderBg"></div><div class="darkBorderBg"></div>
@@ -207,7 +239,26 @@
         <div id="results"></div>
     </div>
 
+    <!-- Novo painel de operadoras -->
+    <div id="operator-panel">
+        <div class="subtitle">selecione uma operadora</div>
+        
+        <div class="operator-item" data-operator="Metlife">
+            Metlife <span class="checkmark">✓</span>
+        </div>
+        <div class="operator-item" data-operator="Unimed">
+            Unimed <span class="checkmark">✓</span>
+        </div>
+        <div class="operator-item" data-operator="Odontoprev">
+            Odontoprev <span class="checkmark">✓</span>
+        </div>
+        <div class="operator-item" data-operator="Hapvida">
+            Hapvida <span class="checkmark">✓</span>
+        </div>
+    </div>
+
     <script>
+        // Estrelas
         function createStars() {
             const numberOfStars = 350;
             for (let i = 0; i < numberOfStars; i++) {
@@ -225,6 +276,7 @@
 
         let municipios = [];
         let debounceTimer = null;
+        let selectedCity = "";
 
         const IBGE_URL = "https://api.codetabs.com/v1/proxy?quest=https://servicodados.ibge.gov.br/api/v1/localidades/municipios?orderBy=nome";
 
@@ -290,6 +342,23 @@
             }
         }
 
+        function selectCity(cityText) {
+            const input = document.getElementById('search-input');
+            const poda = document.getElementById('poda');
+            const results = document.getElementById('results');
+            const operatorPanel = document.getElementById('operator-panel');
+
+            input.value = cityText;
+            results.classList.remove('show');
+            toggleClearButton();
+
+            // Move a barra para cima e aplica transparência
+            poda.classList.add('city-selected');
+
+            // Mostra o painel de operadoras com fade
+            operatorPanel.classList.add('show');
+        }
+
         function debounce(func, delay) {
             return function(...args) {
                 clearTimeout(debounceTimer);
@@ -304,24 +373,32 @@
             const input = document.getElementById('search-input');
             const resultsContainer = document.getElementById('results');
             const clearBtn = document.getElementById('clear-btn');
+            const operatorPanel = document.getElementById('operator-panel');
 
             input.addEventListener('input', () => {
                 filtrarCidades(input.value);
                 toggleClearButton();
-            });
-
-            resultsContainer.addEventListener('click', function(e) {
-                if (e.target.closest('.result-item')) {
-                    const item = e.target.closest('.result-item');
-                    input.value = item.getAttribute('data-value');
-                    resultsContainer.classList.remove('show');
-                    toggleClearButton();
+                // Esconde o painel de operadoras se o usuário voltar a digitar
+                if (operatorPanel.classList.contains('show')) {
+                    operatorPanel.classList.remove('show');
+                    document.getElementById('poda').classList.remove('city-selected');
                 }
             });
 
+            // Clique em resultado da cidade
+            resultsContainer.addEventListener('click', function(e) {
+                if (e.target.closest('.result-item')) {
+                    const item = e.target.closest('.result-item');
+                    selectCity(item.getAttribute('data-value'));
+                }
+            });
+
+            // Botão X
             clearBtn.addEventListener('click', () => {
                 input.value = '';
                 resultsContainer.classList.remove('show');
+                operatorPanel.classList.remove('show');
+                document.getElementById('poda').classList.remove('city-selected');
                 toggleClearButton();
                 input.focus();
             });
@@ -335,6 +412,8 @@
                     resultsContainer.classList.remove('show');
                 }
             });
+
+            console.log('%c✅ Projeto ODIN - Painel de operadoras adicionado!', 'color: #cf30aa; font-weight: bold');
         };
     </script>
 </body>
