@@ -20,7 +20,7 @@
             position: relative;
         }
 
-        /* === ESTRELAS DINÂMICAS (do código que você enviou) === */
+        /* Estrelas dinâmicas */
         .star {
             position: absolute;
             background: white;
@@ -35,25 +35,29 @@
             50% { opacity: 0.3; }
         }
 
-        /* === BARRA NEON (mantida igual) === */
+        /* === BARRA EXPANSÍVEL === */
         #poda {
             position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 314px;
+            width: auto;
+            min-width: 314px;
+            max-width: 620px;           /* limite máximo bonito */
             height: 70px;
             z-index: 10;
         }
 
         .glow, .darkBorderBg, .white, .border {
             position: absolute;
-            max-height: 70px; max-width: 314px;
-            height: 100%; width: 100%;
-            overflow: hidden; border-radius: 12px; z-index: -1;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            border-radius: 12px;
+            z-index: -1;
         }
 
-        .glow { filter: blur(30px); opacity: 0.4; max-height: 130px; max-width: 354px; }
+        .glow { filter: blur(30px); opacity: 0.4; max-height: 130px; max-width: 680px; }
         .glow::before {
             content: ""; position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -50%) rotate(60deg);
@@ -62,7 +66,7 @@
             transition: all 2s ease;
         }
 
-        .darkBorderBg { max-height: 65px; max-width: 312px; }
+        .darkBorderBg { max-height: 65px; max-width: 640px; }
         .darkBorderBg::before {
             content: ""; position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -50%) rotate(82deg);
@@ -71,7 +75,7 @@
             transition: all 2s ease;
         }
 
-        .white { max-height: 63px; max-width: 307px; border-radius: 10px; filter: blur(2px); }
+        .white { max-height: 63px; max-width: 635px; border-radius: 10px; filter: blur(2px); }
         .white::before {
             content: ""; position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -50%) rotate(83deg);
@@ -80,7 +84,7 @@
             filter: brightness(1.4); transition: all 2s ease;
         }
 
-        .border { max-height: 59px; max-width: 303px; border-radius: 11px; filter: blur(0.5px); }
+        .border { max-height: 59px; max-width: 630px; border-radius: 11px; filter: blur(0.5px); }
         .border::before {
             content: ""; position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -50%) rotate(70deg);
@@ -89,20 +93,67 @@
             filter: brightness(1.3); transition: all 2s ease;
         }
 
-        #main { position: relative; width: 301px; height: 56px; }
-        .input {
-            background-color: #010201; border: none; width: 100%; height: 100%;
-            border-radius: 10px; color: white; padding-left: 59px; padding-right: 20px;
-            font-size: 18px; font-weight: 500; letter-spacing: 0.3px;
+        #main { 
+            position: relative; 
+            width: 100%; 
+            min-width: 301px; 
+            height: 56px; 
         }
+
+        .input {
+            background-color: #010201;
+            border: none;
+            width: 100%;
+            height: 100%;
+            border-radius: 10px;
+            color: white;
+            padding-left: 59px;
+            padding-right: 55px;
+            font-size: 18px;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
         .input::placeholder { color: #c0b9c0; }
         .input:focus { outline: none; }
 
         #input-mask, #pink-mask { pointer-events: none; position: absolute; }
-        #input-mask { width: 100px; height: 20px; background: linear-gradient(90deg, transparent, #010201); top: 18px; left: 70px; z-index: 2; }
-        #pink-mask { width: 30px; height: 20px; background: #cf30aa; top: 10px; left: 5px; filter: blur(20px); opacity: 0.8; transition: all 2s ease; z-index: 1; }
+        #input-mask { 
+            width: 100px; height: 20px; 
+            background: linear-gradient(90deg, transparent, #010201); 
+            top: 18px; left: 70px; z-index: 2; 
+            display: none; 
+        }
+        #pink-mask { 
+            width: 30px; height: 20px; background: #cf30aa; 
+            top: 10px; left: 5px; filter: blur(20px); 
+            opacity: 0.8; transition: all 2s ease; z-index: 1; 
+        }
 
         #search-icon { position: absolute; left: 20px; top: 16px; z-index: 3; }
+
+        /* Botão X */
+        #clear-btn {
+            position: absolute;
+            right: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #cf30aa;
+            font-size: 22px;
+            cursor: pointer;
+            z-index: 4;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: all 0.2s ease;
+        }
+        #clear-btn.show { opacity: 1; }
 
         #poda:hover .glow::before,
         #poda:hover .darkBorderBg::before,
@@ -115,7 +166,6 @@
         #poda:focus-within .border::before { transform: translate(-50%, -50%) rotate(420deg); transition-duration: 4s; }
 
         #poda:hover #pink-mask { opacity: 0; }
-        #main:focus-within #input-mask { display: none; }
 
         #results {
             position: absolute;
@@ -136,6 +186,7 @@
             scrollbar-width: thin;
         }
         #results.show { display: flex; }
+
         .result-item {
             padding: 12px 20px; color: #e0e0e0; font-size: 15.5px;
             cursor: pointer; transition: all 0.2s ease; border-bottom: 1px solid rgba(255,255,255,0.05);
@@ -146,13 +197,13 @@
         .no-results { padding: 20px; text-align: center; color: #888; font-size: 14px; }
 
         @media (max-width: 480px) {
-            #poda, #results { width: 280px; }
+            #poda { max-width: 90vw; }
+            #results { width: 280px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Barra de busca neon -->
     <div id="poda">
         <div class="glow"></div>
         <div class="darkBorderBg"></div><div class="darkBorderBg"></div><div class="darkBorderBg"></div>
@@ -174,31 +225,31 @@
                     </defs>
                 </svg>
             </div>
+
+            <div id="clear-btn">✕</div>
         </div>
 
         <div id="results"></div>
     </div>
 
     <script>
-        // === ESTRELAS DINÂMICAS (código do site que você mandou) ===
+        // === ESTRELAS DINÂMICAS ===
         function createStars() {
-            const numberOfStars = 350;   // aumentei um pouco para ficar mais bonito
+            const numberOfStars = 350;
             for (let i = 0; i < numberOfStars; i++) {
                 const star = document.createElement('div');
                 star.classList.add('star');
-                
                 const size = Math.random() * 3 + 1;
                 star.style.width = `${size}px`;
                 star.style.height = `${size}px`;
                 star.style.left = `${Math.random() * 100}vw`;
                 star.style.top = `${Math.random() * 100}vh`;
                 star.style.animationDuration = `${Math.random() * 3 + 1}s`;
-                
                 document.body.appendChild(star);
             }
         }
 
-        // === BUSCA IBGE (mantida igual) ===
+        // === RESTO DO CÓDIGO (busca + X + máscara) ===
         let municipios = [];
         let debounceTimer = null;
 
@@ -252,6 +303,20 @@
             resultsContainer.classList.add('show');
         }
 
+        function toggleClearButton() {
+            const input = document.getElementById('search-input');
+            const clearBtn = document.getElementById('clear-btn');
+            const mask = document.getElementById('input-mask');
+
+            if (input.value.trim().length > 0) {
+                clearBtn.classList.add('show');
+                mask.style.display = 'none';
+            } else {
+                clearBtn.classList.remove('show');
+                mask.style.display = 'block';
+            }
+        }
+
         function debounce(func, delay) {
             return function(...args) {
                 clearTimeout(debounceTimer);
@@ -260,18 +325,38 @@
         }
 
         window.onload = async function() {
-            createStars();                    // ← cria as estrelas
+            createStars();
             await carregarMunicipios();
 
             const input = document.getElementById('search-input');
             const resultsContainer = document.getElementById('results');
-            
-            input.addEventListener('input', debounce((e) => filtrarCidades(e.target.value), 250));
-            
+            const clearBtn = document.getElementById('clear-btn');
+
+            input.addEventListener('input', () => {
+                filtrarCidades(input.value);
+                toggleClearButton();
+            });
+
+            resultsContainer.addEventListener('click', function(e) {
+                if (e.target.closest('.result-item')) {
+                    const item = e.target.closest('.result-item');
+                    input.value = item.getAttribute('data-value');
+                    resultsContainer.classList.remove('show');
+                    toggleClearButton();
+                }
+            });
+
+            clearBtn.addEventListener('click', () => {
+                input.value = '';
+                resultsContainer.classList.remove('show');
+                toggleClearButton();
+                input.focus();
+            });
+
             input.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape') resultsContainer.classList.remove('show');
             });
-            
+
             document.addEventListener('click', function(e) {
                 if (!document.getElementById('poda').contains(e.target)) {
                     resultsContainer.classList.remove('show');
