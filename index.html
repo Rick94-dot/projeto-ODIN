@@ -20,6 +20,17 @@
             position: relative;
         }
 
+        /* === LOGO VÍDEO (canto superior esquerdo) === */
+        .logo-video {
+            position: absolute;
+            top: 40px;
+            left: 40px;
+            width: 220px;
+            border-radius: 16px;
+            box-shadow: 0 0 40px rgba(207, 48, 170, 0.7);
+            z-index: 5;
+        }
+
         /* Estrelas dinâmicas */
         .star {
             position: absolute;
@@ -35,7 +46,7 @@
             50% { opacity: 0.3; }
         }
 
-        /* === BARRA EXPANSÍVEL === */
+        /* === BARRA NEON (com expansão) === */
         #poda {
             position: relative;
             display: flex;
@@ -43,7 +54,7 @@
             justify-content: center;
             width: auto;
             min-width: 314px;
-            max-width: 620px;           /* limite máximo bonito */
+            max-width: 620px;
             height: 70px;
             z-index: 10;
         }
@@ -58,47 +69,18 @@
         }
 
         .glow { filter: blur(30px); opacity: 0.4; max-height: 130px; max-width: 680px; }
-        .glow::before {
-            content: ""; position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%) rotate(60deg);
-            width: 999px; height: 999px;
-            background-image: conic-gradient(#000, #402fb5 5%, #000 38%, #000 50%, #cf30aa 60%, #000 87%);
-            transition: all 2s ease;
-        }
+        .glow::before { content: ""; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(60deg); width: 999px; height: 999px; background-image: conic-gradient(#000, #402fb5 5%, #000 38%, #000 50%, #cf30aa 60%, #000 87%); transition: all 2s ease; }
 
         .darkBorderBg { max-height: 65px; max-width: 640px; }
-        .darkBorderBg::before {
-            content: ""; position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%) rotate(82deg);
-            width: 600px; height: 600px;
-            background-image: conic-gradient(rgba(0,0,0,0), #18116a, rgba(0,0,0,0) 10%, rgba(0,0,0,0) 50%, #6e1b60, rgba(0,0,0,0) 60%);
-            transition: all 2s ease;
-        }
+        .darkBorderBg::before { content: ""; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(82deg); width: 600px; height: 600px; background-image: conic-gradient(rgba(0,0,0,0), #18116a, rgba(0,0,0,0) 10%, rgba(0,0,0,0) 50%, #6e1b60, rgba(0,0,0,0) 60%); transition: all 2s ease; }
 
         .white { max-height: 63px; max-width: 635px; border-radius: 10px; filter: blur(2px); }
-        .white::before {
-            content: ""; position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%) rotate(83deg);
-            width: 600px; height: 600px;
-            background-image: conic-gradient(rgba(0,0,0,0) 0%, #a099d8, rgba(0,0,0,0) 8%, rgba(0,0,0,0) 50%, #dfa2da, rgba(0,0,0,0) 58%);
-            filter: brightness(1.4); transition: all 2s ease;
-        }
+        .white::before { content: ""; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(83deg); width: 600px; height: 600px; background-image: conic-gradient(rgba(0,0,0,0) 0%, #a099d8, rgba(0,0,0,0) 8%, rgba(0,0,0,0) 50%, #dfa2da, rgba(0,0,0,0) 58%); filter: brightness(1.4); transition: all 2s ease; }
 
         .border { max-height: 59px; max-width: 630px; border-radius: 11px; filter: blur(0.5px); }
-        .border::before {
-            content: ""; position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%) rotate(70deg);
-            width: 600px; height: 600px;
-            background-image: conic-gradient(#1c191c, #402fb5 5%, #1c191c 14%, #1c191c 50%, #cf30aa 60%, #1c191c 64%);
-            filter: brightness(1.3); transition: all 2s ease;
-        }
+        .border::before { content: ""; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(70deg); width: 600px; height: 600px; background-image: conic-gradient(#1c191c, #402fb5 5%, #1c191c 14%, #1c191c 50%, #cf30aa 60%, #1c191c 64%); filter: brightness(1.3); transition: all 2s ease; }
 
-        #main { 
-            position: relative; 
-            width: 100%; 
-            min-width: 301px; 
-            height: 56px; 
-        }
+        #main { position: relative; width: 100%; min-width: 301px; height: 56px; }
 
         .input {
             background-color: #010201;
@@ -121,21 +103,11 @@
         .input:focus { outline: none; }
 
         #input-mask, #pink-mask { pointer-events: none; position: absolute; }
-        #input-mask { 
-            width: 100px; height: 20px; 
-            background: linear-gradient(90deg, transparent, #010201); 
-            top: 18px; left: 70px; z-index: 2; 
-            display: none; 
-        }
-        #pink-mask { 
-            width: 30px; height: 20px; background: #cf30aa; 
-            top: 10px; left: 5px; filter: blur(20px); 
-            opacity: 0.8; transition: all 2s ease; z-index: 1; 
-        }
+        #input-mask { width: 100px; height: 20px; background: linear-gradient(90deg, transparent, #010201); top: 18px; left: 70px; z-index: 2; display: none; }
+        #pink-mask { width: 30px; height: 20px; background: #cf30aa; top: 10px; left: 5px; filter: blur(20px); opacity: 0.8; transition: all 2s ease; z-index: 1; }
 
         #search-icon { position: absolute; left: 20px; top: 16px; z-index: 3; }
 
-        /* Botão X */
         #clear-btn {
             position: absolute;
             right: 18px;
@@ -197,13 +169,21 @@
         .no-results { padding: 20px; text-align: center; color: #888; font-size: 14px; }
 
         @media (max-width: 480px) {
+            .logo-video { width: 160px; top: 20px; left: 20px; }
             #poda { max-width: 90vw; }
-            #results { width: 280px; }
         }
     </style>
 </head>
 <body>
 
+    <!-- Logo em vídeo no canto superior esquerdo -->
+    <video class="logo-video" autoplay loop muted playsinline>
+        <source src="VÍDEO LOGO ODIN.mp4" type="video/mp4">
+        <!-- Fallback para o PNG caso o vídeo não carregue -->
+        <img src="LOGO ODIN.png" alt="Logo ODIN" style="width:100%; border-radius:16px;">
+    </video>
+
+    <!-- Barra de busca -->
     <div id="poda">
         <div class="glow"></div>
         <div class="darkBorderBg"></div><div class="darkBorderBg"></div><div class="darkBorderBg"></div>
@@ -233,7 +213,7 @@
     </div>
 
     <script>
-        // === ESTRELAS DINÂMICAS ===
+        // Estrelas + Busca + Botão X (código anterior)
         function createStars() {
             const numberOfStars = 350;
             for (let i = 0; i < numberOfStars; i++) {
@@ -249,7 +229,6 @@
             }
         }
 
-        // === RESTO DO CÓDIGO (busca + X + máscara) ===
         let municipios = [];
         let debounceTimer = null;
 
