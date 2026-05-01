@@ -6,9 +6,7 @@
     <title>Projeto ODIN • Busca IBGE</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
-
         * { margin: 0; padding: 0; box-sizing: border-box; }
-
         body {
             background: #000;
             height: 100vh;
@@ -20,15 +18,13 @@
             font-family: 'Inter', system-ui, sans-serif;
             position: relative;
         }
-
         /* Logo */
         .logo {
             position: absolute;
             top: 45px;
-            width: 380px;
+            width: 460px;
             z-index: 5;
         }
-
         /* Estrelas */
         .star {
             position: absolute;
@@ -42,7 +38,6 @@
             0%, 100% { opacity: 0.8; }
             50% { opacity: 0.3; }
         }
-
         /* Barra de busca */
         #poda {
             position: relative;
@@ -57,36 +52,24 @@
             margin-top: 160px;
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
-
-        /* Quando cidade é selecionada */
         #poda.city-selected {
-            margin-top: 80px;
-            opacity: 0.95;
+            margin-top: 90px;
+            opacity: 0.93;
         }
-
         .glow, .darkBorderBg, .white, .border {
             position: absolute;
-            height: 100%;
-            width: 100%;
-            overflow: hidden;
-            border-radius: 12px;
-            z-index: -1;
+            height: 100%; width: 100%;
+            overflow: hidden; border-radius: 12px; z-index: -1;
         }
-
-        .glow { filter: blur(30px); opacity: 0.4; }
+        .glow { filter: blur(30px); opacity: 0.4; max-height: 130px; max-width: 680px; }
         .glow::before { content: ""; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(60deg); width: 999px; height: 999px; background-image: conic-gradient(#000, #402fb5 5%, #000 38%, #000 50%, #cf30aa 60%, #000 87%); transition: all 2s ease; }
-
         .darkBorderBg { max-height: 65px; max-width: 640px; }
         .darkBorderBg::before { content: ""; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(82deg); width: 600px; height: 600px; background-image: conic-gradient(rgba(0,0,0,0), #18116a, rgba(0,0,0,0) 10%, rgba(0,0,0,0) 50%, #6e1b60, rgba(0,0,0,0) 60%); transition: all 2s ease; }
-
         .white { max-height: 63px; max-width: 635px; border-radius: 10px; filter: blur(2px); }
         .white::before { content: ""; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(83deg); width: 600px; height: 600px; background-image: conic-gradient(rgba(0,0,0,0) 0%, #a099d8, rgba(0,0,0,0) 8%, rgba(0,0,0,0) 50%, #dfa2da, rgba(0,0,0,0) 58%); filter: brightness(1.4); transition: all 2s ease; }
-
         .border { max-height: 59px; max-width: 630px; border-radius: 11px; filter: blur(0.5px); }
         .border::before { content: ""; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(70deg); width: 600px; height: 600px; background-image: conic-gradient(#1c191c, #402fb5 5%, #1c191c 14%, #1c191c 50%, #cf30aa 60%, #1c191c 64%); filter: brightness(1.3); transition: all 2s ease; }
-
         #main { position: relative; width: 100%; min-width: 301px; height: 56px; }
-
         .input {
             background-color: #010201;
             border: none;
@@ -99,17 +82,13 @@
             font-size: 18px;
             font-weight: 500;
             letter-spacing: 0.3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
-
         .input::placeholder { color: #c0b9c0; }
         .input:focus { outline: none; }
-
-        #input-mask, #pink-mask { pointer-events: none; position: absolute; }
-        #input-mask { width: 100px; height: 20px; background: linear-gradient(90deg, transparent, #010201); top: 18px; left: 70px; z-index: 2; display: none; }
-        #pink-mask { width: 30px; height: 20px; background: #cf30aa; top: 10px; left: 5px; filter: blur(20px); opacity: 0.8; transition: all 2s ease; z-index: 1; }
-
         #search-icon { position: absolute; left: 20px; top: 16px; z-index: 3; }
-
         #clear-btn {
             position: absolute;
             right: 18px;
@@ -128,82 +107,113 @@
             transition: all 0.2s ease;
         }
         #clear-btn.show { opacity: 1; }
+        #poda:hover .glow::before,
+        #poda:hover .darkBorderBg::before,
+        #poda:hover .white::before,
+        #poda:hover .border::before { transform: translate(-50%, -50%) rotate(240deg); }
+        #poda:focus-within .glow::before,
+        #poda:focus-within .darkBorderBg::before,
+        #poda:focus-within .white::before,
+        #poda:focus-within .border::before { transform: translate(-50%, -50%) rotate(420deg); transition-duration: 4s; }
+        #poda:hover #pink-mask { opacity: 0; }
 
-        /* === PAINEL DE OPERADORAS (neon) === */
+        /* Resultados */
+        #results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            margin-top: 8px;
+            width: 314px;
+            max-height: 380px;
+            background: #0a0a0b;
+            border-radius: 12px;
+            border: 1px solid #2a2a35;
+            box-shadow: 0 0 30px rgba(207, 48, 170, 0.3);
+            overflow-y: auto;
+            z-index: 20;
+            display: none;
+            flex-direction: column;
+            padding: 8px 0;
+            scrollbar-width: thin;
+        }
+        #results.show { display: flex; }
+        .result-item {
+            padding: 12px 20px; color: #e0e0e0; font-size: 15.5px;
+            cursor: pointer; transition: all 0.2s ease; border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .result-item:hover { background: rgba(207, 48, 170, 0.15); color: white; padding-left: 24px; }
+        .result-item .city { font-weight: 600; }
+        .result-item .uf { color: #cf30aa; font-size: 13px; margin-left: 8px; }
+        .no-results { padding: 20px; text-align: center; color: #888; font-size: 14px; }
+
+        /* Painel de Operadoras - Neon Checkbox */
         #operator-panel {
             position: absolute;
             top: 100%;
             left: 0;
             margin-top: 12px;
             width: 314px;
-            background: rgba(10, 10, 11, 0.95);
+            background: rgba(10,10,11,0.98);
             border-radius: 16px;
-            border: 1px solid rgba(207, 48, 170, 0.4);
-            box-shadow: 0 0 40px rgba(207, 48, 170, 0.5);
+            border: 1px solid rgba(207,48,170,0.5);
+            box-shadow: 0 0 40px rgba(207,48,170,0.6);
             padding: 20px;
-            opacity: 0;
-            transform: translateY(10px);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 30;
             display: none;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
-
         #operator-panel.show {
             display: block;
             opacity: 1;
-            transform: translateY(0);
         }
-
         #operator-panel .subtitle {
             text-align: center;
             color: #cf30aa;
             font-size: 15px;
-            margin-bottom: 16px;
+            margin-bottom: 18px;
             text-transform: uppercase;
             letter-spacing: 1px;
         }
-
-        .operator-item {
+        .checkbox-wrapper {
             display: flex;
             align-items: center;
-            padding: 14px 18px;
-            margin-bottom: 8px;
-            background: rgba(0, 0, 0, 0.4);
-            border: 2px solid rgba(207, 48, 170, 0.3);
-            border-radius: 12px;
+            padding: 12px 0;
+            cursor: pointer;
+        }
+        .checkbox-wrapper input { position: absolute; opacity: 0; width: 0; height: 0; }
+        .checkmark {
+            width: 26px;
+            height: 26px;
+            border: 2px solid rgba(0,255,136,0.7);
+            border-radius: 8px;
+            background: rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        .checkbox-wrapper input:checked ~ .checkmark {
+            border-color: #00ff88;
+            box-shadow: 0 0 20px rgba(0,255,136,0.6);
+        }
+        .checkmark svg {
+            width: 0; height: 0; color: #111;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        .checkbox-wrapper input:checked ~ .checkmark svg {
+            width: 18px; height: 18px;
+        }
+        .label {
+            margin-left: 16px;
             color: white;
             font-size: 17px;
-            cursor: pointer;
-            transition: all 0.3s ease;
         }
-
-        .operator-item:hover {
-            border-color: #cf30aa;
-            background: rgba(207, 48, 170, 0.15);
-            transform: translateX(4px);
-        }
-
-        .operator-item.selected {
-            border-color: #cf30aa;
-            background: rgba(207, 48, 170, 0.25);
-            box-shadow: 0 0 20px rgba(207, 48, 170, 0.6);
-        }
-
-        .operator-item .checkmark {
-            margin-left: auto;
-            font-size: 20px;
-            opacity: 0;
-            transition: all 0.3s;
-        }
-
-        .operator-item.selected .checkmark {
-            opacity: 1;
-        }
+        .checkbox-wrapper:hover .label { color: #00ff88; }
 
         @media (max-width: 480px) {
-            .logo { width: 280px; top: 40px; }
-            #poda { max-width: 90vw; }
-            #operator-panel { width: 280px; }
+            .logo { width: 290px; top: 35px; }
+            #poda, #results, #operator-panel { max-width: 90vw; }
         }
     </style>
 </head>
@@ -216,12 +226,10 @@
         <div class="darkBorderBg"></div><div class="darkBorderBg"></div><div class="darkBorderBg"></div>
         <div class="white"></div>
         <div class="border"></div>
-
         <div id="main">
             <input type="text" class="input" placeholder="Digite cidade ou UF..." id="search-input">
             <div id="input-mask"></div>
             <div id="pink-mask"></div>
-
             <div id="search-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
                     <circle stroke="url(#search)" r="8" cy="11" cx="11"/>
@@ -232,33 +240,57 @@
                     </defs>
                 </svg>
             </div>
-
             <div id="clear-btn">✕</div>
         </div>
-
         <div id="results"></div>
     </div>
 
-    <!-- Novo painel de operadoras -->
+    <!-- Painel de Operadoras -->
     <div id="operator-panel">
         <div class="subtitle">selecione uma operadora</div>
         
-        <div class="operator-item" data-operator="Metlife">
-            Metlife <span class="checkmark">✓</span>
-        </div>
-        <div class="operator-item" data-operator="Unimed">
-            Unimed <span class="checkmark">✓</span>
-        </div>
-        <div class="operator-item" data-operator="Odontoprev">
-            Odontoprev <span class="checkmark">✓</span>
-        </div>
-        <div class="operator-item" data-operator="Hapvida">
-            Hapvida <span class="checkmark">✓</span>
-        </div>
+        <label class="checkbox-wrapper">
+            <input type="checkbox">
+            <div class="checkmark">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 6L9 17L4 12"/>
+                </svg>
+            </div>
+            <span class="label">Metlife</span>
+        </label>
+
+        <label class="checkbox-wrapper">
+            <input type="checkbox">
+            <div class="checkmark">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 6L9 17L4 12"/>
+                </svg>
+            </div>
+            <span class="label">Unimed</span>
+        </label>
+
+        <label class="checkbox-wrapper">
+            <input type="checkbox">
+            <div class="checkmark">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 6L9 17L4 12"/>
+                </svg>
+            </div>
+            <span class="label">Odontoprev</span>
+        </label>
+
+        <label class="checkbox-wrapper">
+            <input type="checkbox">
+            <div class="checkmark">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 6L9 17L4 12"/>
+                </svg>
+            </div>
+            <span class="label">Hapvida</span>
+        </label>
     </div>
 
     <script>
-        // Estrelas
         function createStars() {
             const numberOfStars = 350;
             for (let i = 0; i < numberOfStars; i++) {
@@ -276,7 +308,6 @@
 
         let municipios = [];
         let debounceTimer = null;
-        let selectedCity = "";
 
         const IBGE_URL = "https://api.codetabs.com/v1/proxy?quest=https://servicodados.ibge.gov.br/api/v1/localidades/municipios?orderBy=nome";
 
@@ -328,20 +359,6 @@
             resultsContainer.classList.add('show');
         }
 
-        function toggleClearButton() {
-            const input = document.getElementById('search-input');
-            const clearBtn = document.getElementById('clear-btn');
-            const mask = document.getElementById('input-mask');
-
-            if (input.value.trim().length > 0) {
-                clearBtn.classList.add('show');
-                mask.style.display = 'none';
-            } else {
-                clearBtn.classList.remove('show');
-                mask.style.display = 'block';
-            }
-        }
-
         function selectCity(cityText) {
             const input = document.getElementById('search-input');
             const poda = document.getElementById('poda');
@@ -350,20 +367,18 @@
 
             input.value = cityText;
             results.classList.remove('show');
-            toggleClearButton();
-
-            // Move a barra para cima e aplica transparência
             poda.classList.add('city-selected');
-
-            // Mostra o painel de operadoras com fade
             operatorPanel.classList.add('show');
         }
 
-        function debounce(func, delay) {
-            return function(...args) {
-                clearTimeout(debounceTimer);
-                debounceTimer = setTimeout(() => func(...args), delay);
-            };
+        function toggleClearButton() {
+            const input = document.getElementById('search-input');
+            const clearBtn = document.getElementById('clear-btn');
+            if (input.value.trim().length > 0) {
+                clearBtn.classList.add('show');
+            } else {
+                clearBtn.classList.remove('show');
+            }
         }
 
         window.onload = async function() {
@@ -373,19 +388,14 @@
             const input = document.getElementById('search-input');
             const resultsContainer = document.getElementById('results');
             const clearBtn = document.getElementById('clear-btn');
-            const operatorPanel = document.getElementById('operator-panel');
 
             input.addEventListener('input', () => {
                 filtrarCidades(input.value);
                 toggleClearButton();
-                // Esconde o painel de operadoras se o usuário voltar a digitar
-                if (operatorPanel.classList.contains('show')) {
-                    operatorPanel.classList.remove('show');
-                    document.getElementById('poda').classList.remove('city-selected');
-                }
+                document.getElementById('operator-panel').classList.remove('show');
+                document.getElementById('poda').classList.remove('city-selected');
             });
 
-            // Clique em resultado da cidade
             resultsContainer.addEventListener('click', function(e) {
                 if (e.target.closest('.result-item')) {
                     const item = e.target.closest('.result-item');
@@ -393,11 +403,10 @@
                 }
             });
 
-            // Botão X
             clearBtn.addEventListener('click', () => {
                 input.value = '';
                 resultsContainer.classList.remove('show');
-                operatorPanel.classList.remove('show');
+                document.getElementById('operator-panel').classList.remove('show');
                 document.getElementById('poda').classList.remove('city-selected');
                 toggleClearButton();
                 input.focus();
@@ -412,8 +421,6 @@
                     resultsContainer.classList.remove('show');
                 }
             });
-
-            console.log('%c✅ Projeto ODIN - Painel de operadoras adicionado!', 'color: #cf30aa; font-weight: bold');
         };
     </script>
 </body>
