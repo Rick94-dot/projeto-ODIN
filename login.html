@@ -441,9 +441,8 @@
                 // ── Simulação temporária (remova quando tiver backend) ──
                 await new Promise(r => setTimeout(r, 1000));
                 if (usuario === 'admin' && senha === 'odin2025') {
-                    // Salva um token simulado
                     localStorage.setItem('odin_token', 'simulado_' + Date.now());
-                    window.location.href = 'index.html';
+                    window.location.href = '/projeto-ODIN/index.html';
                 } else {
                     throw new Error('Usuário ou senha incorretos.');
                 }
@@ -472,7 +471,7 @@
         // Quando tiver o backend real, valide o token via API
         // Por ora, só checa se existe
         if (localStorage.getItem('odin_token')) {
-            window.location.href = 'index.html';
+            window.location.href = '/projeto-ODIN/index.html';
         }
 
         /* ── Init ─────────────────────────────────────────── */
