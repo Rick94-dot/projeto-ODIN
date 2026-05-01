@@ -13,7 +13,7 @@
         :root {
             --pink:   #cf30aa;
             --blue:   #402fb5;
-            --green:  #00ff88;
+            --green:  #cf30aa;
             --bg:     #000;
             --surface:#0a0a0b;
             --border: #2a2a35;
@@ -301,12 +301,12 @@
             border: 1px solid rgba(255,255,255,0.06);
             transition: border-color 0.2s ease, background 0.2s ease;
         }
-        .checkbox-wrapper:hover { background: rgba(0,255,136,0.05); border-color: rgba(0,255,136,0.25); }
+        .checkbox-wrapper:hover { background: rgba(207,48,170,0.05); border-color: rgba(207,48,170,0.3); }
         .checkbox-wrapper input { position: absolute; opacity: 0; width: 0; height: 0; }
 
         .checkmark {
             width: 22px; height: 22px;
-            border: 2px solid rgba(0,255,136,0.5);
+            border: 2px solid rgba(207,48,170,0.4);
             border-radius: 6px;
             background: rgba(0,0,0,0.4);
             display: flex; align-items: center; justify-content: center;
@@ -314,13 +314,13 @@
             transition: all 0.3s cubic-bezier(0.68,-0.55,0.265,1.55);
         }
         .checkbox-wrapper input:checked ~ .checkmark {
-            border-color: var(--green);
-            background: rgba(0,255,136,0.1);
-            box-shadow: 0 0 14px rgba(0,255,136,0.5);
+            border-color: var(--pink);
+            background: rgba(207,48,170,0.15);
+            box-shadow: 0 0 14px rgba(207,48,170,0.6);
         }
         .checkmark svg {
             width: 0; height: 0;
-            color: var(--green);
+            color: var(--pink);
             transition: all 0.3s cubic-bezier(0.68,-0.55,0.265,1.55);
         }
         .checkbox-wrapper input:checked ~ .checkmark svg { width: 14px; height: 14px; }
@@ -332,7 +332,7 @@
             font-family: 'DM Sans', sans-serif;
             user-select: none;
         }
-        .checkbox-wrapper:has(input:checked) .label { color: var(--green); }
+        .checkbox-wrapper:has(input:checked) .label { color: var(--pink); }
 
         /* Botão Buscar */
         #btn-buscar {
@@ -549,8 +549,8 @@
             operatorPanel.classList.remove('show');
             poda.classList.remove('city-selected');
             btnBuscar.classList.remove('show');
-            // desmarca checkboxes
-            document.querySelectorAll('#operators-grid input').forEach(cb => cb.checked = false);
+            // desmarca radio
+            document.querySelectorAll('#operators-grid input').forEach(r => r.checked = false);
             toggleClearBtn();
             input.focus();
         }
@@ -562,7 +562,7 @@
 
         /* ── Botão Buscar (aparece quando ≥1 operadora marcada) ── */
         function atualizarBtnBuscar() {
-            const algumaMarcada = [...document.querySelectorAll('#operators-grid input')].some(cb => cb.checked);
+            const algumaMarcada = !!document.querySelector('#operators-grid input:checked');
             btnBuscar.classList.toggle('show', algumaMarcada);
         }
 
@@ -571,7 +571,7 @@
             const grid = $('operators-grid');
             grid.innerHTML = OPERADORAS.map(op => `
                 <label class="checkbox-wrapper">
-                    <input type="checkbox" value="${op}">
+                    <input type="radio" name="operadora" value="${op}">
                     <div class="checkmark">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M20 6L9 17L4 12"/>
@@ -586,13 +586,12 @@
 
         /* ── Buscar ───────────────────────────────────────── */
         function executarBusca() {
-            const operadoras = [...document.querySelectorAll('#operators-grid input:checked')].map(cb => cb.value);
-            if (!selectedCity || operadoras.length === 0) return;
+            const operadora = document.querySelector('#operators-grid input:checked')?.value;
+            if (!selectedCity || !operadora) return;
 
-            // Aqui você pode redirecionar, fazer fetch, ou emitir evento
-            console.log('[ODIN] Busca:', { cidade: selectedCity, operadoras });
-            // Exemplo: window.location.href = `resultados.html?cidade=${encodeURIComponent(selectedCity)}&ops=${operadoras.join(',')}`;
-            alert(`Buscando:\n🏙️ ${selectedCity}\n🏥 ${operadoras.join(', ')}`);
+            console.log('[ODIN] Busca:', { cidade: selectedCity, operadora });
+            // Exemplo: window.location.href = `resultados.html?cidade=${encodeURIComponent(selectedCity)}&op=${encodeURIComponent(operadora)}`;
+            alert(`Buscando:\n🏙️ ${selectedCity}\n🏥 ${operadora}`);
         }
 
         /* ── Debounce util ────────────────────────────────── */
