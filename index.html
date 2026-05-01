@@ -21,13 +21,13 @@
             position: relative;
         }
 
-        /* === LOGO GRANDE ACIMA DA BARRA === */
+        /* === LOGO LIMPA (sem contorno, sem glow extra) === */
         .logo {
             position: absolute;
             top: 60px;
-            width: 380px;           /* tamanho maior e com destaque */
+            width: 380px;           /* tamanho grande para destaque */
             z-index: 5;
-            filter: drop-shadow(0 0 50px rgba(207, 48, 170, 0.8));
+            /* Sem drop-shadow ou filtro extra */
         }
 
         /* Estrelas dinâmicas */
@@ -45,7 +45,7 @@
             50% { opacity: 0.3; }
         }
 
-        /* === BARRA NEON (com expansão) === */
+        /* === BARRA NEON === */
         #poda {
             position: relative;
             display: flex;
@@ -56,7 +56,7 @@
             max-width: 620px;
             height: 70px;
             z-index: 10;
-            margin-top: 140px; /* espaço entre logo e barra */
+            margin-top: 160px;
         }
 
         .glow, .darkBorderBg, .white, .border {
@@ -69,40 +69,16 @@
         }
 
         .glow { filter: blur(30px); opacity: 0.4; max-height: 130px; max-width: 680px; }
-        .glow::before {
-            content: ""; position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%) rotate(60deg);
-            width: 999px; height: 999px;
-            background-image: conic-gradient(#000, #402fb5 5%, #000 38%, #000 50%, #cf30aa 60%, #000 87%);
-            transition: all 2s ease;
-        }
+        .glow::before { content: ""; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(60deg); width: 999px; height: 999px; background-image: conic-gradient(#000, #402fb5 5%, #000 38%, #000 50%, #cf30aa 60%, #000 87%); transition: all 2s ease; }
 
         .darkBorderBg { max-height: 65px; max-width: 640px; }
-        .darkBorderBg::before {
-            content: ""; position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%) rotate(82deg);
-            width: 600px; height: 600px;
-            background-image: conic-gradient(rgba(0,0,0,0), #18116a, rgba(0,0,0,0) 10%, rgba(0,0,0,0) 50%, #6e1b60, rgba(0,0,0,0) 60%);
-            transition: all 2s ease;
-        }
+        .darkBorderBg::before { content: ""; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(82deg); width: 600px; height: 600px; background-image: conic-gradient(rgba(0,0,0,0), #18116a, rgba(0,0,0,0) 10%, rgba(0,0,0,0) 50%, #6e1b60, rgba(0,0,0,0) 60%); transition: all 2s ease; }
 
         .white { max-height: 63px; max-width: 635px; border-radius: 10px; filter: blur(2px); }
-        .white::before {
-            content: ""; position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%) rotate(83deg);
-            width: 600px; height: 600px;
-            background-image: conic-gradient(rgba(0,0,0,0) 0%, #a099d8, rgba(0,0,0,0) 8%, rgba(0,0,0,0) 50%, #dfa2da, rgba(0,0,0,0) 58%);
-            filter: brightness(1.4); transition: all 2s ease;
-        }
+        .white::before { content: ""; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(83deg); width: 600px; height: 600px; background-image: conic-gradient(rgba(0,0,0,0) 0%, #a099d8, rgba(0,0,0,0) 8%, rgba(0,0,0,0) 50%, #dfa2da, rgba(0,0,0,0) 58%); filter: brightness(1.4); transition: all 2s ease; }
 
         .border { max-height: 59px; max-width: 630px; border-radius: 11px; filter: blur(0.5px); }
-        .border::before {
-            content: ""; position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%) rotate(70deg);
-            width: 600px; height: 600px;
-            background-image: conic-gradient(#1c191c, #402fb5 5%, #1c191c 14%, #1c191c 50%, #cf30aa 60%, #1c191c 64%);
-            filter: brightness(1.3); transition: all 2s ease;
-        }
+        .border::before { content: ""; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(70deg); width: 600px; height: 600px; background-image: conic-gradient(#1c191c, #402fb5 5%, #1c191c 14%, #1c191c 50%, #cf30aa 60%, #1c191c 64%); filter: brightness(1.3); transition: all 2s ease; }
 
         #main { position: relative; width: 100%; min-width: 301px; height: 56px; }
 
@@ -200,7 +176,7 @@
 </head>
 <body>
 
-    <!-- Logo grande acima da barra -->
+    <!-- Logo limpa (sem contorno roxo) -->
     <img src="LOGO ODIN SEM FUNDO.png" alt="Projeto ODIN" class="logo">
 
     <!-- Barra de busca -->
@@ -233,7 +209,6 @@
     </div>
 
     <script>
-        // Estrelas + Busca + Botão X (mantido igual)
         function createStars() {
             const numberOfStars = 350;
             for (let i = 0; i < numberOfStars; i++) {
