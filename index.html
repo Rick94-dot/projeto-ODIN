@@ -563,30 +563,17 @@
         @media (max-width: 480px) {
             .logo { width: 75vw; top: 30px; }
             #poda { width: min(90vw, 340px); }
+            .glow { display: none; } /* remove o glow que extrapola no mobile */
         }
 
         /* ── Mobile: permite scroll quando painel está aberto ── */
-        @media (max-height: 700px), (max-width: 480px) {
-            body.panel-open {
-                overflow-y: auto;
-                align-items: flex-start;
-                padding: 20px 0 60px;
-            }
-            body.panel-open #poda {
-                position: relative;
-                margin-top: 100px !important;
-            }
-            body.panel-open .logo {
-                position: relative;
-                top: auto;
-                margin: 0 auto 16px;
-                display: block;
-            }
-            #operator-panel {
-                position: relative;
-                top: auto;
-                margin-top: 10px;
-            }
+        body.panel-open {
+            overflow-y: auto;
+            align-items: center;
+            padding-bottom: 60px;
+        }
+        body.panel-open #poda {
+            margin-top: 140px !important;
         }
     </style>
 </head>
