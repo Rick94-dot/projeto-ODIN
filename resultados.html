@@ -442,11 +442,19 @@
             const nota  = document.querySelector('input[name="rating"]:checked')?.value;
             const texto = document.getElementById('avaliar-texto').value.trim();
             if (!nota) { alert('Selecione uma nota antes de enviar!'); return; }
-            console.log('[ODIN Feedback] Avaliação:', { nota, texto });
+            fetch('https://odin-backend-rv69.onrender.com/feedback', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tipo: 'avaliacao', nota: Number(nota), texto, pagina: 'resultados' })
+            });
         } else {
             const texto = document.getElementById('melhoria-texto').value.trim();
             if (!texto) { alert('Descreva a melhoria antes de enviar!'); return; }
-            console.log('[ODIN Feedback] Melhoria:', { texto });
+            fetch('https://odin-backend-rv69.onrender.com/feedback', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tipo: 'melhoria', texto, pagina: 'resultados' })
+            });
         }
         fecharModal(tipo);
         document.querySelectorAll('input[name="rating"]').forEach(r => r.checked = false);
