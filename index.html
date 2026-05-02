@@ -564,6 +564,30 @@
             .logo { width: 75vw; top: 30px; }
             #poda { width: min(90vw, 340px); }
         }
+
+        /* ── Mobile: permite scroll quando painel está aberto ── */
+        @media (max-height: 700px), (max-width: 480px) {
+            body.panel-open {
+                overflow-y: auto;
+                align-items: flex-start;
+                padding: 20px 0 60px;
+            }
+            body.panel-open #poda {
+                position: relative;
+                margin-top: 100px !important;
+            }
+            body.panel-open .logo {
+                position: relative;
+                top: auto;
+                margin: 0 auto 16px;
+                display: block;
+            }
+            #operator-panel {
+                position: relative;
+                top: auto;
+                margin-top: 10px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -787,10 +811,9 @@
             input.value    = texto;
             fecharResults();
             poda.classList.add('city-selected');
-            operatorPanel.classList.add('show');
+            abrirPainel();
             toggleClearBtn();
 
-            // Busca coordenadas do centróide da cidade via IBGE
             try {
                 const res  = await fetch(`https://servicodados.ibge.gov.br/api/v2/malhas/municipios/${ibgeId}/metadados`);
                 const data = await res.json();
@@ -808,7 +831,7 @@
             selectedCity = null;
             input.value  = '';
             fecharResults();
-            operatorPanel.classList.remove('show');
+            fecharPainel();
             poda.classList.remove('city-selected');
             specialtySection.classList.remove('show');
             btnBuscar.classList.remove('show');
@@ -847,6 +870,17 @@
                 btnBuscar.classList.remove('show');
             }
             atualizarBuscar();
+        }
+
+        function abrirPainel() {
+            operatorPanel.classList.add('show');
+            document.body.classList.add('panel-open');
+            setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 400);
+        }
+
+        function fecharPainel() {
+            operatorPanel.classList.remove('show');
+            document.body.classList.remove('panel-open');
         }
 
         /* ── Renderiza operadoras (checkbox múltiplo) ─────── */
@@ -947,7 +981,7 @@
             // se o usuário edita depois de selecionar cidade, reseta o painel
             if (selectedCity && input.value !== selectedCity) {
                 selectedCity = null;
-                operatorPanel.classList.remove('show');
+                fecharPainel();
                 poda.classList.remove('city-selected');
                 specialtySection.classList.remove('show');
                 btnBuscar.classList.remove('show');
