@@ -845,17 +845,57 @@
 
         /* ── Config ──────────────────────────────────────── */
         const IBGE_API = 'https://servicodados.ibge.gov.br/api/v1/localidades/municipios?orderBy=nome';
-        const OPERADORAS = ['Metlife', 'Unimed', 'Odontoprev', 'Hapvida'];
-        const ESPECIALIDADES = [
-            { label: 'Clínico Geral',    value: 'clinico geral' },
-            { label: 'Ortodontia',       value: 'ortodontia' },
-            { label: 'Endodontia',       value: 'endodontia' },
-            { label: 'Periodontia',      value: 'periodontia' },
-            { label: 'Cirurgia',         value: 'cirurgia' },
-            { label: 'Odontopediatria',  value: 'odontopediatria' },
-            { label: 'Prótese Dentária', value: 'protese dentaria' },
-            { label: 'Radiologia',       value: 'radiologia' },
-        ];
+        const OPERADORAS = ['Odontoprev', 'Unimed', 'Metlife', 'Hapvida'];
+
+        const ESPECIALIDADES_POR_OPERADORA = {
+            'Odontoprev': [
+                { label: 'Clínico Geral',    value: 'clinico geral' },
+                { label: 'Ortodontia',       value: 'ortodontia' },
+                { label: 'Endodontia',       value: 'endodontia' },
+                { label: 'Periodontia',      value: 'periodontia' },
+                { label: 'Cirurgia',         value: 'cirurgia' },
+                { label: 'Odontopediatria',  value: 'odontopediatria' },
+                { label: 'Prótese Dentária', value: 'protese dentaria' },
+                { label: 'Radiologia',       value: 'radiologia' },
+            ],
+            'Unimed': [
+                { label: 'Cirurgia',                  value: 'cirurgia' },
+                { label: 'Clínico Geral',             value: 'clinica geral' },
+                { label: 'Dentística',                value: 'dentistica' },
+                { label: 'Endodontia',                value: 'endodontia' },
+                { label: 'Odontopediatria',           value: 'odontopediatria' },
+                { label: 'Ortodontia',                value: 'ortodontia' },
+                { label: 'Pacientes Especiais',       value: 'pacientes especiais' },
+                { label: 'Periodontia',               value: 'periodontia' },
+                { label: 'Prótese',                   value: 'protese' },
+                { label: 'Radiologia',                value: 'radiologia' },
+                { label: 'Urgência (Hora Comercial)', value: 'urgencia' },
+                { label: 'Urgência (24 horas)',       value: 'urgencia 24' },
+            ],
+            'Metlife': [
+                { label: 'Clínico Geral',    value: 'clinico geral' },
+                { label: 'Ortodontia',       value: 'ortodontia' },
+                { label: 'Endodontia',       value: 'endodontia' },
+                { label: 'Periodontia',      value: 'periodontia' },
+                { label: 'Cirurgia',         value: 'cirurgia' },
+                { label: 'Odontopediatria',  value: 'odontopediatria' },
+                { label: 'Prótese',          value: 'protese' },
+                { label: 'Radiologia',       value: 'radiologia' },
+            ],
+            'Hapvida': [
+                { label: 'Clínico Geral',    value: 'clinico geral' },
+                { label: 'Ortodontia',       value: 'ortodontia' },
+                { label: 'Endodontia',       value: 'endodontia' },
+                { label: 'Periodontia',      value: 'periodontia' },
+                { label: 'Cirurgia',         value: 'cirurgia' },
+                { label: 'Odontopediatria',  value: 'odontopediatria' },
+                { label: 'Prótese',          value: 'protese' },
+                { label: 'Radiologia',       value: 'radiologia' },
+            ],
+        };
+
+        // Especialidades da operadora selecionada (começa vazio)
+        let ESPECIALIDADES = [];
         const MAX_RESULTS = 12;
         const DEBOUNCE_MS = 220;
 
@@ -1023,8 +1063,7 @@
             todasEsps = false;
             todasOps  = false;
             allEspBtn.classList.remove('active');
-            document.querySelectorAll('#operators-grid input').forEach(r => r.checked = false);
-            document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+            document.querySelectorAll('#operators-grid input').forEach(r => r.checked = false);            document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
             toggleClearBtn();
             input.focus();
         }
@@ -1036,14 +1075,14 @@
 
         /* ── Atualiza visibilidade do botão Buscar ─────────── */
         function atualizarBuscar() {
-            const temOp  = todasOps || !!document.querySelector('#operators-grid input:checked');
+            const temOp  = !!document.querySelector('#operators-grid input:checked');
             const temEsp = todasEsps || selectedEsps.size > 0;
             btnBuscar.classList.toggle('show', temOp && temEsp);
         }
 
         /* ── Cascata: operadora selecionada → mostra especialidade */
         function atualizarEspecialidade() {
-            const temOp = todasOps || !!document.querySelector('#operators-grid input:checked');
+            const temOp = !!document.querySelector('#operators-grid input:checked');
             specialtySection.classList.toggle('show', temOp);
             if (!temOp) {
                 selectedEsps.clear();
@@ -1066,12 +1105,12 @@
             document.body.classList.remove('panel-open');
         }
 
-        /* ── Renderiza operadoras (checkbox múltiplo) ─────── */
+        /* ── Renderiza operadoras (radio — seleção única) ─── */
         function renderOperadoras() {
             const grid = $('operators-grid');
             grid.innerHTML = OPERADORAS.map(op => `
                 <label class="checkbox-wrapper">
-                    <input type="checkbox" value="${op}">
+                    <input type="radio" name="operadora" value="${op}">
                     <div class="checkmark">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M20 6L9 17L4 12"/>
@@ -1081,6 +1120,15 @@
                 </label>
             `).join('');
             grid.addEventListener('change', () => {
+                const op = document.querySelector('#operators-grid input:checked')?.value;
+                if (op) {
+                    // Atualiza especialidades da operadora selecionada
+                    ESPECIALIDADES = ESPECIALIDADES_POR_OPERADORA[op] || [];
+                    selectedEsps.clear();
+                    todasEsps = false;
+                    allEspBtn.classList.remove('active');
+                    renderChips();
+                }
                 todasOps = false;
                 atualizarEspecialidade();
             });
@@ -1118,20 +1166,13 @@
 
         /* ── Buscar ───────────────────────────────────────── */
         function executarBusca() {
-            const ops = todasOps
-                ? OPERADORAS
-                : [...document.querySelectorAll('#operators-grid input:checked')].map(cb => cb.value);
-            const esps = todasEsps
-                ? ESPECIALIDADES.map(e => e.value)
-                : [...selectedEsps];
-            if (!selectedCity || ops.length === 0 || esps.length === 0) return;
+            const operadora = document.querySelector('#operators-grid input:checked')?.value;
+            const esps = todasEsps ? ESPECIALIDADES.map(e => e.value) : [...selectedEsps];
+            if (!selectedCity || !operadora || esps.length === 0) return;
 
             const cidadeFormatada = selectedCity.replace(', ', ' - ');
-
-            // Manda todas as especialidades selecionadas separadas por vírgula
             const espCodigo = todasEsps ? 'todas' : esps.join(',');
             const espNome   = todasEsps ? 'Todas' : esps.map(v => ESPECIALIDADES.find(e => e.value === v)?.label).filter(Boolean).join(', ');
-            const operadora = ops[0];
 
             const url = `/projeto-ODIN/resultados.html?cidade=${encodeURIComponent(cidadeFormatada)}&operadora=${encodeURIComponent(operadora)}&especialidade=${encodeURIComponent(espCodigo)}&espNome=${encodeURIComponent(espNome)}&lat=${encodeURIComponent(selectedLat)}&lng=${encodeURIComponent(selectedLng)}`;
             window.location.href = url;
