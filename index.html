@@ -816,12 +816,6 @@
             <div class="panel-title">Selecione a operadora</div>
             <div class="operators-grid" id="operators-grid"></div>
 
-            <!-- Todas as operadoras -->
-            <div class="all-toggle" id="all-ops-toggle">
-                <div class="all-dot"><div class="all-dot-inner"></div></div>
-                Todas as operadoras
-            </div>
-
             <!-- Especialidade -->
             <div id="specialty-section">
                 <div class="specialty-header">
@@ -885,7 +879,6 @@
         const poda           = $('poda');
         const operatorPanel  = $('operator-panel');
         const specialtySection = $('specialty-section');
-        const allOpsToggle   = $('all-ops-toggle');
         const allEspBtn      = $('all-esp-btn');
         const chipsGrid      = $('chips-grid');
         const btnBuscar      = $('btn-buscar');
@@ -1029,7 +1022,6 @@
             selectedEsps.clear();
             todasEsps = false;
             todasOps  = false;
-            allOpsToggle.classList.remove('active');
             allEspBtn.classList.remove('active');
             document.querySelectorAll('#operators-grid input').forEach(r => r.checked = false);
             document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
@@ -1089,23 +1081,10 @@
                 </label>
             `).join('');
             grid.addEventListener('change', () => {
-                // se marcou alguma individualmente, desmarca "todas"
                 todasOps = false;
-                allOpsToggle.classList.remove('active');
                 atualizarEspecialidade();
             });
         }
-
-        /* ── Toggle "Todas as operadoras" ─────────────────── */
-        allOpsToggle.addEventListener('click', () => {
-            todasOps = !todasOps;
-            allOpsToggle.classList.toggle('active', todasOps);
-            // desmarca individuais se ativou "todas"
-            if (todasOps) {
-                document.querySelectorAll('#operators-grid input').forEach(cb => cb.checked = false);
-            }
-            atualizarEspecialidade();
-        });
 
         /* ── Renderiza chips de especialidade ─────────────── */
         function renderChips() {
@@ -1179,7 +1158,6 @@
                 btnBuscar.classList.remove('show');
                 selectedEsps.clear();
                 todasEsps = false; todasOps = false;
-                allOpsToggle.classList.remove('active');
                 allEspBtn.classList.remove('active');
                 document.querySelectorAll('#operators-grid input').forEach(cb => cb.checked = false);
                 document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
