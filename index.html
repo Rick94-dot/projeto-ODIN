@@ -636,16 +636,16 @@
         const IBGE_API = 'https://servicodados.ibge.gov.br/api/v1/localidades/municipios?orderBy=nome';
         const OPERADORAS = ['Metlife', 'Unimed', 'Odontoprev', 'Hapvida'];
         const ESPECIALIDADES = [
-            { label: 'Clínico Geral',   value: 'clinico-geral' },
-            { label: 'Ortodontia',      value: 'ortodontia' },
-            { label: 'Endodontia',      value: 'endodontia' },
-            { label: 'Periodontia',     value: 'periodontia' },
-            { label: 'Implantes',       value: 'implantodontia' },
-            { label: 'Odontopediatria', value: 'odontopediatria' },
-            { label: 'Cirurgia',        value: 'cirurgia-buco' },
-            { label: 'Prótese',         value: 'protese' },
-            { label: 'Radiologia',      value: 'radiologia' },
-            { label: 'Estomatologia',   value: 'estomatologia' },
+            { label: 'Clínico Geral',   value: '1' },
+            { label: 'Ortodontia',      value: '2' },
+            { label: 'Endodontia',      value: '3' },
+            { label: 'Periodontia',     value: '4' },
+            { label: 'Implantes',       value: '5' },
+            { label: 'Odontopediatria', value: '6' },
+            { label: 'Cirurgia',        value: '7' },
+            { label: 'Prótese',         value: '8' },
+            { label: 'Radiologia',      value: '9' },
+            { label: 'Estomatologia',   value: '10' },
         ];
         const MAX_RESULTS = 12;
         const DEBOUNCE_MS = 220;
@@ -654,7 +654,10 @@
         let municipios = [];
         let debounceTimer = null;
         let selectedCity = null;
-        let selectedEsps = new Set(); // especialidades selecionadas
+        let selectedLat  = '-23.519516199999998';
+        let selectedLng  = '-46.8366591';
+        let selectedIbgeId = null;
+        let selectedEsps = new Set();
         let todasEsps = false;
         let todasOps  = false;
 
@@ -720,6 +723,7 @@
                     return {
                         nome:      m.nome,
                         uf,
+                        id:        m.id,
                         texto:     `${m.nome}, ${uf}`,
                         nomeNorm:  normalize(m.nome),
                         ufNorm:    uf.toLowerCase(),
@@ -762,7 +766,7 @@
                 results.innerHTML = `<div class="no-results">Nenhuma cidade encontrada para "<strong>${termo}</strong>"</div>`;
             } else {
                 results.innerHTML = lista.map(r =>
-                    `<div class="result-item" role="option" data-value="${r.texto}">
+                    `<div class="result-item" role="option" data-value="${r.texto}" data-id="${r.id}">
                         <span class="city">${r.nome}</span>
                         <span class="uf">${r.uf}</span>
                     </div>`
@@ -777,13 +781,26 @@
         }
 
         /* ── Seleção de cidade ────────────────────────────── */
-        function selecionarCidade(texto) {
-            selectedCity = texto;
-            input.value  = texto;
+        async function selecionarCidade(texto, ibgeId) {
+            selectedCity   = texto;
+            selectedIbgeId = ibgeId;
+            input.value    = texto;
             fecharResults();
             poda.classList.add('city-selected');
             operatorPanel.classList.add('show');
             toggleClearBtn();
+
+            // Busca coordenadas do centróide da cidade via IBGE
+            try {
+                const res  = await fetch(`https://servicodados.ibge.gov.br/api/v2/malhas/municipios/${ibgeId}/metadados`);
+                const data = await res.json();
+                if (data[0]?.centroide) {
+                    selectedLat = String(data[0].centroide.latitude);
+                    selectedLng = String(data[0].centroide.longitude);
+                }
+            } catch {
+                // mantém o fallback de Carapicuíba
+            }
         }
 
         /* ── Limpar tudo ──────────────────────────────────── */
@@ -905,12 +922,13 @@
                 : [...selectedEsps];
             if (!selectedCity || ops.length === 0 || esps.length === 0) return;
 
-            // Pega o código e nome da especialidade selecionada
+            // Converte "Carapicuíba, SP" → "Carapicuíba - SP" para a Odontoprev
+            const cidadeFormatada = selectedCity.replace(', ', ' - ');
             const espCodigo = todasEsps ? '999' : ESPECIALIDADES.find(e => esps.includes(e.value))?.value || '999';
             const espNome   = todasEsps ? 'Todas' : ESPECIALIDADES.find(e => esps.includes(e.value))?.label || 'Todas';
-            const operadora = ops[0]; // primeira operadora selecionada
+            const operadora = ops[0];
 
-            const url = `/projeto-ODIN/resultados.html?cidade=${encodeURIComponent(selectedCity)}&operadora=${encodeURIComponent(operadora)}&especialidade=${encodeURIComponent(espCodigo)}&espNome=${encodeURIComponent(espNome)}`;
+            const url = `/projeto-ODIN/resultados.html?cidade=${encodeURIComponent(cidadeFormatada)}&operadora=${encodeURIComponent(operadora)}&especialidade=${encodeURIComponent(espCodigo)}&espNome=${encodeURIComponent(espNome)}&lat=${encodeURIComponent(selectedLat)}&lng=${encodeURIComponent(selectedLng)}`;
             window.location.href = url;
         }
 
@@ -946,7 +964,7 @@
 
         results.addEventListener('click', e => {
             const item = e.target.closest('.result-item');
-            if (item) selecionarCidade(item.dataset.value);
+            if (item) selecionarCidade(item.dataset.value, item.dataset.id);
         });
 
         clearBtn.addEventListener('click', limpar);
