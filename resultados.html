@@ -372,7 +372,7 @@
                 const res  = await fetch(`${API_URL}/buscar/odontoprev`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ cidade, codigoEspecialidade: especialidade, pagina: String(pagina), latitude: lat, longitude: lng })
+                    body: JSON.stringify({ cidade, codigoEspecialidade: especialidade, latitude: lat, longitude: lng })
                 });
                 const data = await res.json();
                 document.getElementById('loading').style.display = 'none';
