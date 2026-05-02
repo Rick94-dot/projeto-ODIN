@@ -1280,30 +1280,34 @@
 
     function enviarFeedback(tipo) {
         if (tipo === 'avaliar') {
-            const nota  = document.querySelector('input[name="rating"]:checked')?.value || null;
+            const nota  = document.querySelector('input[name="rating"]:checked')?.value;
             const texto = document.getElementById('avaliar-texto').value.trim();
             if (!nota) { alert('Selecione uma nota antes de enviar!'); return; }
-            console.log('[ODIN Feedback] Avaliação:', { nota, texto });
-            // → aqui vai a chamada à API quando definir onde salvar
+            fetch('https://odin-backend-rv69.onrender.com/feedback', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tipo: 'avaliacao', nota: Number(nota), texto, pagina: 'index' })
+            });
         } else {
             const texto = document.getElementById('melhoria-texto').value.trim();
             if (!texto) { alert('Descreva a melhoria antes de enviar!'); return; }
-            console.log('[ODIN Feedback] Melhoria:', { texto });
-            // → aqui vai a chamada à API quando definir onde salvar
+            fetch('https://odin-backend-rv69.onrender.com/feedback', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tipo: 'melhoria', texto, pagina: 'index' })
+            });
         }
         fecharModal(tipo);
-        // Limpa campos
         document.querySelectorAll('input[name="rating"]').forEach(r => r.checked = false);
         document.getElementById('avaliar-texto').value = '';
         document.getElementById('melhoria-texto').value = '';
-        // Toast simples
         const t = document.createElement('div');
         t.textContent = '✓ Feedback enviado! Obrigado 🙏';
         Object.assign(t.style, {
             position:'fixed', bottom:'28px', left:'50%', transform:'translateX(-50%)',
             background:'rgba(37,120,153,0.15)', border:'1px solid rgba(37,120,153,0.4)',
             color:'#7ab8cc', padding:'11px 20px', borderRadius:'10px',
-            fontFamily:'Syne,sans-serif', fontSize:'12px', fontWeight:'700',
+            fontFamily:"'Syne',sans-serif", fontSize:'12px', fontWeight:'700',
             letterSpacing:'0.5px', zIndex:'9999', whiteSpace:'nowrap',
             transition:'opacity 0.3s ease',
         });
