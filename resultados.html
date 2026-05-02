@@ -491,6 +491,13 @@
         const lat           = params.get('lat')           || '-23.519516199999998';
         const lng           = params.get('lng')           || '-46.8366591';
 
+        const ROTAS = {
+            'Odontoprev': { buscar: '/buscar/odontoprev', exportar: '/exportar/odontoprev' },
+            'Unimed':     { buscar: '/buscar/unimed',     exportar: '/exportar/unimed' },
+            'Metlife':    { buscar: '/buscar/odontoprev', exportar: '/exportar/odontoprev' },
+            'Hapvida':    { buscar: '/buscar/odontoprev', exportar: '/exportar/odontoprev' },
+        };
+        const rota = ROTAS[operadora] || ROTAS['Odontoprev'];
         let totalDentistas = 0;
 
         /* ── Estrelas ─────────────────────────────────────── */
@@ -535,7 +542,7 @@
             document.getElementById('btn-excel').disabled           = true;
 
             try {
-                const res  = await fetch(`${API_URL}/buscar/odontoprev`, {
+                const res  = await fetch(`${API_URL}${rota.buscar}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ cidade, codigoEspecialidade: especialidade, latitude: lat, longitude: lng })
@@ -628,7 +635,7 @@
             `;
 
             try {
-                const res  = await fetch(`${API_URL}/exportar/odontoprev`, {
+                const res  = await fetch(`${API_URL}${rota.exportar}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ cidade, codigoEspecialidade: especialidade, latitude: lat, longitude: lng })
