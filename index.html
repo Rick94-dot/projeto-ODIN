@@ -941,10 +941,11 @@
                 : [...selectedEsps];
             if (!selectedCity || ops.length === 0 || esps.length === 0) return;
 
-            // Converte "Carapicuíba, SP" → "Carapicuíba - SP" para a Odontoprev
             const cidadeFormatada = selectedCity.replace(', ', ' - ');
-            const espCodigo = todasEsps ? '999' : ESPECIALIDADES.find(e => esps.includes(e.value))?.value || '999';
-            const espNome   = todasEsps ? 'Todas' : ESPECIALIDADES.find(e => esps.includes(e.value))?.label || 'Todas';
+
+            // Manda todas as especialidades selecionadas separadas por vírgula
+            const espCodigo = todasEsps ? 'todas' : esps.join(',');
+            const espNome   = todasEsps ? 'Todas' : esps.map(v => ESPECIALIDADES.find(e => e.value === v)?.label).filter(Boolean).join(', ');
             const operadora = ops[0];
 
             const url = `/projeto-ODIN/resultados.html?cidade=${encodeURIComponent(cidadeFormatada)}&operadora=${encodeURIComponent(operadora)}&especialidade=${encodeURIComponent(espCodigo)}&espNome=${encodeURIComponent(espNome)}&lat=${encodeURIComponent(selectedLat)}&lng=${encodeURIComponent(selectedLng)}`;
