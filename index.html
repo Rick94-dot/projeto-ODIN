@@ -525,8 +525,6 @@
             cursor: pointer;
             position: relative;
             overflow: hidden;
-
-            /* estado oculto */
             max-height: 0;
             opacity: 0;
             padding: 0 12px;
@@ -537,18 +535,25 @@
                         padding    0.45s ease,
                         margin-top 0.45s ease;
         }
-        /* shimmer interno no botão */
-        #btn-buscar::after {
+        #btn-buscar::before {
             content: "";
             position: absolute;
-            top: -50%; left: -60%;
-            width: 50%; height: 200%;
-            background: rgba(255,255,255,0.15);
-            transform: skewX(-20deg);
-            transition: left 0.5s ease;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: #000;
+            width: 120%; left: -10%;
+            transform: skew(30deg) translateX(110%);
+            transition: transform 0.45s cubic-bezier(0.3,1,0.8,1);
+            z-index: 0;
         }
-        #btn-buscar:hover::after { left: 120%; }
-
+        #btn-buscar:hover::before { transform: skew(30deg) translateX(0%); }
+        #btn-buscar span {
+            position: relative;
+            z-index: 1;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
         #btn-buscar.show {
             max-height: 56px;
             opacity: 1;
@@ -556,14 +561,225 @@
             margin-top: 10px;
             pointer-events: all;
         }
-        #btn-buscar:hover { filter: brightness(1.15); }
-        #btn-buscar:active { filter: brightness(0.9); transform: scale(0.98); }
+        #btn-buscar:active { transform: scale(0.97); }
+
+        /* ── Botão Feedback ───────────────────────────────── */
+        #feedback-widget {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 8px;
+        }
+        #feedback-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            width: 52px;
+            height: 44px;
+            border-radius: 8px;
+            border: 1px solid rgba(218,72,149,0.3);
+            background: rgba(6,9,11,0.95);
+            color: #e08ab8;
+            font-family: 'Syne', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            overflow: hidden;
+            transition: width 0.4s cubic-bezier(0.22,1,0.36,1), border-color 0.2s ease;
+            backdrop-filter: blur(12px);
+            position: relative;
+        }
+        #feedback-toggle:hover {
+            width: 130px;
+            border-color: var(--pink);
+        }
+        .fb-icon {
+            width: 52px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: transform 0.2s ease;
+        }
+        #feedback-toggle:active .fb-icon { transform: scale(0.88); }
+        .fb-text {
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.2s ease 0.1s;
+            padding-right: 12px;
+        }
+        #feedback-toggle:hover .fb-text { opacity: 1; }
+
+        /* sub-botões */
+        .fb-sub-btns {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 6px;
+            overflow: hidden;
+            max-height: 0;
+            opacity: 0;
+            transition: max-height 0.4s cubic-bezier(0.22,1,0.36,1), opacity 0.3s ease;
+        }
+        .fb-sub-btns.open { max-height: 120px; opacity: 1; }
+
+        .fb-sub-btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: rgba(6,9,11,0.95);
+            color: var(--text);
+            font-family: 'Syne', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            backdrop-filter: blur(12px);
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+        .fb-sub-btn:hover { border-color: var(--pink); color: var(--pink); }
+
+        /* modal feedback */
+        .fb-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(6px);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .fb-modal-overlay.open { opacity: 1; pointer-events: all; }
+
+        .fb-modal {
+            background: rgba(8,11,13,0.98);
+            border: 1px solid rgba(37,120,153,0.3);
+            border-radius: 18px;
+            padding: 28px 26px;
+            width: 340px;
+            max-width: 90vw;
+            box-shadow: 0 0 0 1px rgba(218,72,149,0.08), 0 30px 80px rgba(0,0,0,0.8);
+            transform: translateY(20px) scale(0.97);
+            transition: transform 0.35s cubic-bezier(0.22,1,0.36,1);
+        }
+        .fb-modal-overlay.open .fb-modal { transform: translateY(0) scale(1); }
+
+        .fb-modal-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            background: var(--grad);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 6px;
+        }
+        .fb-modal-subtitle {
+            font-family: 'Syne', sans-serif;
+            font-size: 17px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        /* estrelas */
+        .star-rating {
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: flex-end;
+            gap: 4px;
+            margin-bottom: 16px;
+        }
+        .star-rating input { display: none; }
+        .star-rating label {
+            font-size: 32px;
+            color: #2a3540;
+            cursor: pointer;
+            transition: color 0.2s ease, transform 0.15s ease;
+            line-height: 1;
+        }
+        .star-rating label:hover,
+        .star-rating label:hover ~ label,
+        .star-rating input:checked ~ label {
+            color: var(--pink);
+        }
+        .star-rating label:hover { transform: scale(1.15); }
+
+        /* textarea feedback */
+        .fb-textarea {
+            width: 100%;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: white;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13.5px;
+            padding: 11px 14px;
+            resize: none;
+            height: 90px;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            margin-bottom: 14px;
+        }
+        .fb-textarea::placeholder { color: var(--muted); }
+        .fb-textarea:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,120,153,0.15); }
+
+        .fb-modal-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+        .fb-btn-cancel {
+            padding: 9px 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--muted);
+            font-family: 'Syne', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .fb-btn-cancel:hover { border-color: var(--pink); color: var(--pink); }
+        .fb-btn-send {
+            padding: 9px 18px;
+            border-radius: 8px;
+            border: none;
+            background: var(--grad);
+            color: white;
+            font-family: 'Syne', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: filter 0.2s ease;
+        }
+        .fb-btn-send:hover { filter: brightness(1.15); }
 
         /* ── Responsivo ───────────────────────────────────── */
         @media (max-width: 480px) {
             .logo { width: 75vw; top: 30px; }
             #poda { width: min(90vw, 340px); }
-            .glow { display: none; } /* remove o glow que extrapola no mobile */
+            .glow { display: none; }
+            #feedback-widget { top: 12px; right: 12px; }
         }
 
         /* ── Mobile: permite scroll quando painel está aberto ── */
@@ -628,7 +844,10 @@
                 <div class="chips-grid" id="chips-grid"></div>
             </div>
 
-            <button id="btn-buscar" aria-label="Iniciar busca">Buscar</button>
+            <button id="btn-buscar" aria-label="Iniciar busca"><span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                Buscar
+            </span></button>
         </div>
     </div>
 
@@ -1007,5 +1226,111 @@
 
     })();
     </script>
+    <!-- ── Feedback Widget ─────────────────────────────── -->
+    <div id="feedback-widget">
+        <button id="feedback-toggle" onclick="toggleFeedback()">
+            <span class="fb-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+            </span>
+            <span class="fb-text">Feedback</span>
+        </button>
+        <div class="fb-sub-btns" id="fb-sub-btns">
+            <button class="fb-sub-btn" onclick="abrirModal('avaliar')">⭐ Avaliar</button>
+            <button class="fb-sub-btn" onclick="abrirModal('melhoria')">💡 Melhoria</button>
+        </div>
+    </div>
+
+    <!-- Modal Avaliar -->
+    <div class="fb-modal-overlay" id="modal-avaliar">
+        <div class="fb-modal">
+            <div class="fb-modal-title">Feedback</div>
+            <div class="fb-modal-subtitle">Como você avalia o ODIN?</div>
+            <div class="star-rating">
+                <input type="radio" id="star5" name="rating" value="5"><label for="star5">★</label>
+                <input type="radio" id="star4" name="rating" value="4"><label for="star4">★</label>
+                <input type="radio" id="star3" name="rating" value="3"><label for="star3">★</label>
+                <input type="radio" id="star2" name="rating" value="2"><label for="star2">★</label>
+                <input type="radio" id="star1" name="rating" value="1"><label for="star1">★</label>
+            </div>
+            <textarea class="fb-textarea" id="avaliar-texto" placeholder="Conte o que achou (opcional)..."></textarea>
+            <div class="fb-modal-actions">
+                <button class="fb-btn-cancel" onclick="fecharModal('avaliar')">Cancelar</button>
+                <button class="fb-btn-send" onclick="enviarFeedback('avaliar')">Enviar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Melhoria -->
+    <div class="fb-modal-overlay" id="modal-melhoria">
+        <div class="fb-modal">
+            <div class="fb-modal-title">Feedback</div>
+            <div class="fb-modal-subtitle">Qual melhoria você sugere?</div>
+            <textarea class="fb-textarea" id="melhoria-texto" placeholder="Descreva a melhoria que você gostaria de ver..." style="height:120px"></textarea>
+            <div class="fb-modal-actions">
+                <button class="fb-btn-cancel" onclick="fecharModal('melhoria')">Cancelar</button>
+                <button class="fb-btn-send" onclick="enviarFeedback('melhoria')">Enviar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // ── Feedback ───────────────────────────────────────
+    function toggleFeedback() {
+        const sub = document.getElementById('fb-sub-btns');
+        sub.classList.toggle('open');
+    }
+
+    function abrirModal(tipo) {
+        document.getElementById('fb-sub-btns').classList.remove('open');
+        document.getElementById(`modal-${tipo}`).classList.add('open');
+    }
+
+    function fecharModal(tipo) {
+        document.getElementById(`modal-${tipo}`).classList.remove('open');
+    }
+
+    function enviarFeedback(tipo) {
+        if (tipo === 'avaliar') {
+            const nota  = document.querySelector('input[name="rating"]:checked')?.value || null;
+            const texto = document.getElementById('avaliar-texto').value.trim();
+            if (!nota) { alert('Selecione uma nota antes de enviar!'); return; }
+            console.log('[ODIN Feedback] Avaliação:', { nota, texto });
+            // → aqui vai a chamada à API quando definir onde salvar
+        } else {
+            const texto = document.getElementById('melhoria-texto').value.trim();
+            if (!texto) { alert('Descreva a melhoria antes de enviar!'); return; }
+            console.log('[ODIN Feedback] Melhoria:', { texto });
+            // → aqui vai a chamada à API quando definir onde salvar
+        }
+        fecharModal(tipo);
+        // Limpa campos
+        document.querySelectorAll('input[name="rating"]').forEach(r => r.checked = false);
+        document.getElementById('avaliar-texto').value = '';
+        document.getElementById('melhoria-texto').value = '';
+        // Toast simples
+        const t = document.createElement('div');
+        t.textContent = '✓ Feedback enviado! Obrigado 🙏';
+        Object.assign(t.style, {
+            position:'fixed', bottom:'28px', left:'50%', transform:'translateX(-50%)',
+            background:'rgba(37,120,153,0.15)', border:'1px solid rgba(37,120,153,0.4)',
+            color:'#7ab8cc', padding:'11px 20px', borderRadius:'10px',
+            fontFamily:'Syne,sans-serif', fontSize:'12px', fontWeight:'700',
+            letterSpacing:'0.5px', zIndex:'9999', whiteSpace:'nowrap',
+            transition:'opacity 0.3s ease',
+        });
+        document.body.appendChild(t);
+        setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 400); }, 3000);
+    }
+
+    // Fecha modal ao clicar fora
+    document.querySelectorAll('.fb-modal-overlay').forEach(overlay => {
+        overlay.addEventListener('click', e => {
+            if (e.target === overlay) overlay.classList.remove('open');
+        });
+    });
+    </script>
+
 </body>
 </html>
