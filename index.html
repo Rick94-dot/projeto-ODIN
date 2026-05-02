@@ -1137,21 +1137,18 @@
         /* ── Renderiza chips de especialidade ─────────────── */
         function renderChips() {
             chipsGrid.innerHTML = ESPECIALIDADES.map(e => `
-                <div class="chip" data-value="${e.value}">${e.label}</div>
+                <div class="chip" data-value="${e.value}" onclick="toggleChip(this)">${e.label}</div>
             `).join('');
-
-            chipsGrid.addEventListener('click', e => {
-                const chip = e.target.closest('.chip');
-                if (!chip) return;
-                // se "todas" estava ativa, desativa
-                todasEsps = false;
-                allEspBtn.classList.remove('active');
-                chip.classList.toggle('selected');
-                const val = chip.dataset.value;
-                selectedEsps.has(val) ? selectedEsps.delete(val) : selectedEsps.add(val);
-                atualizarBuscar();
-            });
         }
+
+        window.toggleChip = function(chip) {
+            todasEsps = false;
+            allEspBtn.classList.remove('active');
+            chip.classList.toggle('selected');
+            const val = chip.dataset.value;
+            selectedEsps.has(val) ? selectedEsps.delete(val) : selectedEsps.add(val);
+            atualizarBuscar();
+        };
 
         /* ── Toggle "Todas" especialidades ────────────────── */
         allEspBtn.addEventListener('click', () => {
