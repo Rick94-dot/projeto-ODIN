@@ -463,6 +463,8 @@
         const operadora    = params.get('operadora') || '';
         const especialidade= params.get('especialidade') || '999';
         const espNome      = params.get('espNome') || 'Todas';
+        const lat          = params.get('lat') || '-23.519516199999998';
+        const lng          = params.get('lng') || '-46.8366591';
 
         let paginaAtual = 1;
         let totalDentistas = 0;
@@ -514,7 +516,7 @@
                 const res = await fetch(`${API_URL}/buscar/odontoprev`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ cidade, codigoEspecialidade: especialidade, pagina: String(pagina) })
+                    body: JSON.stringify({ cidade, codigoEspecialidade: especialidade, pagina: String(pagina), latitude: lat, longitude: lng })
                 });
                 const data = await res.json();
 
