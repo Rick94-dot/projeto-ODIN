@@ -300,11 +300,7 @@
 
         <div id="cards-grid"></div>
 
-        <div id="paginacao" style="display:none">
-            <button class="btn-pagina" id="btn-anterior" onclick="mudarPagina(-1)">← Anterior</button>
-            <span class="pagina-info" id="pagina-info"></span>
-            <button class="btn-pagina" id="btn-proximo" onclick="mudarPagina(1)">Próximo →</button>
-        </div>
+        <div id="paginacao" style="display:none"></div>
     </main>
 
     <div id="toast">✓ Excel exportado com sucesso!</div>
@@ -329,10 +325,7 @@
         const lat           = params.get('lat')           || '-23.519516199999998';
         const lng           = params.get('lng')           || '-46.8366591';
 
-        let paginaAtual    = 1;
         let totalDentistas = 0;
-        let todosDentistas = [];
-        const POR_PAGINA   = 20;
 
         /* ── Estrelas ─────────────────────────────────────── */
         function createStars() {
@@ -367,7 +360,7 @@
         }
 
         /* ── Busca ────────────────────────────────────────── */
-        async function buscar(pagina) {
+        async function buscar() {
             document.getElementById('loading').style.display        = 'flex';
             document.getElementById('cards-grid').innerHTML         = '';
             document.getElementById('paginacao').style.display      = 'none';
@@ -389,26 +382,15 @@
                     return;
                 }
 
-                totalDentistas = parseInt(data.total) || 0;
-                todosDentistas = data.dentistas;
-                const totalPaginas = Math.ceil(totalDentistas / POR_PAGINA);
-                const inicio = (pagina - 1) * POR_PAGINA + 1;
-                const fim    = Math.min(pagina * POR_PAGINA, totalDentistas);
+                totalDentistas = data.dentistas.length;
 
-                document.getElementById('results-count').textContent    = `${data.dentistas.length} prestadores nesta página · ${totalDentistas} no total`;
+                document.getElementById('results-count').textContent    = `${totalDentistas} prestadores encontrados`;
                 document.getElementById('results-title').textContent    = `${cidade} — ${espNome}`;
-                document.getElementById('results-page-info').textContent = totalPaginas > 1 ? `Exibindo ${inicio}–${fim} de ${totalDentistas}` : '';
+                document.getElementById('results-page-info').textContent = '';
                 document.getElementById('results-header').style.display = 'block';
                 document.getElementById('btn-excel').disabled           = false;
 
-                renderCards(data.dentistas, pagina);
-
-                if (totalPaginas > 1) {
-                    document.getElementById('pagina-info').textContent   = `Página ${pagina} de ${totalPaginas}`;
-                    document.getElementById('btn-anterior').disabled     = pagina <= 1;
-                    document.getElementById('btn-proximo').disabled      = pagina >= totalPaginas;
-                    document.getElementById('paginacao').style.display   = 'flex';
-                }
+                renderCards(data.dentistas);
 
             } catch (err) {
                 document.getElementById('loading').style.display        = 'none';
@@ -418,10 +400,9 @@
         }
 
         /* ── Render cards ─────────────────────────────────── */
-        function renderCards(dentistas, pagina) {
+        function renderCards(dentistas) {
             const grid   = document.getElementById('cards-grid');
             grid.innerHTML = '';
-            const offset = (pagina - 1) * POR_PAGINA;
 
             dentistas.forEach((d, i) => {
                 const esps = d.especialidades
@@ -443,7 +424,7 @@
                 card.className = 'card';
                 card.style.animationDelay = `${i * 0.035}s`;
                 card.innerHTML = `
-                    <span class="card-num">#${offset + i + 1}</span>
+                    <span class="card-num">#${i + 1}</span>
                     <div class="card-nome">${d.nome}</div>
                     <div class="card-dist">
                         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
@@ -539,21 +520,13 @@
             }
         };
 
-        /* ── Paginação ────────────────────────────────────── */
-        function mudarPagina(delta) {
-            paginaAtual += delta;
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            buscar(paginaAtual);
-        }
-        window.mudarPagina = mudarPagina;
-
         /* ── Init ─────────────────────────────────────────── */
         createStars();
         renderSummary();
         if (!cidade || !operadora) {
             window.location.replace('/projeto-ODIN/index.html');
         } else {
-            buscar(1);
+            buscar();
         }
 
     })();
