@@ -467,38 +467,76 @@
         }
 
         /* ── Exportar Excel ───────────────────────────────── */
-        window.exportarExcel = function() {
-            if (!todosDentistas.length) return;
+        window.exportarExcel = async function() {
+            const btn = document.getElementById('btn-excel');
+            btn.disabled = true;
+            btn.innerHTML = `
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/>
+                    <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/>
+                    <line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/>
+                    <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/>
+                </svg>
+                <span>Buscando todos...</span>
+            `;
 
-            const linhas = todosDentistas.map((d, i) => ({
-                '#':              i + 1,
-                'Nome':           d.nome,
-                'Especialidades': d.especialidades.replace(/\|/g, '/').trim(),
-                'Telefone':       d.telefone || '',
-                'WhatsApp':       d.whatsapp || '',
-                'Endereço':       d.endereco,
-                'Distância':      d.distancia.replace('à ',''),
-                'Link Detalhes':  d.linkDetalhes || '',
-            }));
+            try {
+                const res  = await fetch(`${API_URL}/exportar/odontoprev`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ cidade, codigoEspecialidade: especialidade, latitude: lat, longitude: lng })
+                });
+                const data = await res.json();
 
-            const ws = XLSX.utils.json_to_sheet(linhas);
-            const wb = XLSX.utils.book_new();
+                if (!data.dentistas || data.dentistas.length === 0) {
+                    alert('Nenhum dado para exportar.');
+                    return;
+                }
 
-            ws['!cols'] = [
-                { wch: 5 }, { wch: 35 }, { wch: 30 },
-                { wch: 16 }, { wch: 16 }, { wch: 45 },
-                { wch: 12 }, { wch: 60 },
-            ];
+                const linhas = data.dentistas.map((d, i) => ({
+                    '#':              i + 1,
+                    'Nome':           d.nome,
+                    'Especialidades': d.especialidades.replace(/\|/g, '/').trim(),
+                    'Telefone':       d.telefone || '',
+                    'WhatsApp':       d.whatsapp || '',
+                    'Endereço':       d.endereco,
+                    'Distância':      d.distancia.replace('à ',''),
+                    'Link Detalhes':  d.linkDetalhes || '',
+                }));
 
-            XLSX.utils.book_append_sheet(wb, ws, 'Prestadores');
+                const ws = XLSX.utils.json_to_sheet(linhas);
+                const wb = XLSX.utils.book_new();
+                ws['!cols'] = [
+                    { wch: 5 }, { wch: 35 }, { wch: 30 },
+                    { wch: 16 }, { wch: 16 }, { wch: 45 },
+                    { wch: 12 }, { wch: 60 },
+                ];
+                XLSX.utils.book_append_sheet(wb, ws, 'Prestadores');
 
-            const data    = new Date().toLocaleDateString('pt-BR').replace(/\//g,'-');
-            const arquivo = `ODIN_${cidade.replace(/ /g,'_')}_${espNome.replace(/ /g,'_')}_${data}.xlsx`;
-            XLSX.writeFile(wb, arquivo);
+                const dataHoje = new Date().toLocaleDateString('pt-BR').replace(/\//g,'-');
+                const arquivo  = `ODIN_${cidade.replace(/ /g,'_')}_${espNome.replace(/ /g,'_')}_${dataHoje}.xlsx`;
+                XLSX.writeFile(wb, arquivo);
 
-            const toast = document.getElementById('toast');
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3000);
+                const toast = document.getElementById('toast');
+                toast.textContent = `✓ ${data.dentistas.length} prestadores exportados!`;
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 3500);
+
+            } catch (err) {
+                console.error(err);
+                alert('Erro ao exportar. Tente novamente.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="12" y1="18" x2="12" y2="12"/>
+                        <line x1="9" y1="15" x2="15" y2="15"/>
+                    </svg>
+                    <span>Exportar Excel</span>
+                `;
+            }
         };
 
         /* ── Paginação ────────────────────────────────────── */
