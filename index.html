@@ -905,9 +905,13 @@
                 : [...selectedEsps];
             if (!selectedCity || ops.length === 0 || esps.length === 0) return;
 
-            console.log('[ODIN] Busca:', { cidade: selectedCity, operadoras: ops, especialidades: esps });
-            // → aqui vai a chamada à API futuramente
-            alert(`🏙️ ${selectedCity}\n🏥 ${ops.join(', ')}\n🦷 ${esps.join(', ')}`);
+            // Pega o código e nome da especialidade selecionada
+            const espCodigo = todasEsps ? '999' : ESPECIALIDADES.find(e => esps.includes(e.value))?.value || '999';
+            const espNome   = todasEsps ? 'Todas' : ESPECIALIDADES.find(e => esps.includes(e.value))?.label || 'Todas';
+            const operadora = ops[0]; // primeira operadora selecionada
+
+            const url = `/projeto-ODIN/resultados.html?cidade=${encodeURIComponent(selectedCity)}&operadora=${encodeURIComponent(operadora)}&especialidade=${encodeURIComponent(espCodigo)}&espNome=${encodeURIComponent(espNome)}`;
+            window.location.href = url;
         }
 
         /* ── Debounce util ────────────────────────────────── */
