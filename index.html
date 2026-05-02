@@ -572,57 +572,41 @@
             display: flex;
             flex-direction: column;
             align-items: flex-end;
-            gap: 8px;
+            gap: 6px;
         }
         #feedback-toggle {
             display: flex;
             align-items: center;
-            gap: 0;
-            width: 52px;
-            height: 44px;
-            border-radius: 8px;
-            border: 1px solid rgba(218,72,149,0.3);
-            background: rgba(6,9,11,0.95);
+            height: 38px;
+            padding: 0 14px 0 10px;
+            border-radius: 20px;
+            border: 1px solid rgba(218,72,149,0.35);
+            background: rgba(6,9,11,0.92);
             color: #e08ab8;
             font-family: 'Syne', sans-serif;
             font-size: 11px;
             font-weight: 700;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
             text-transform: uppercase;
             cursor: pointer;
-            overflow: hidden;
-            transition: width 0.4s cubic-bezier(0.22,1,0.36,1), border-color 0.2s ease;
+            gap: 7px;
             backdrop-filter: blur(12px);
-            position: relative;
+            transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+            white-space: nowrap;
         }
         #feedback-toggle:hover {
-            width: 130px;
             border-color: var(--pink);
+            box-shadow: 0 0 16px rgba(218,72,149,0.2);
         }
-        .fb-icon {
-            width: 52px;
-            height: 44px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            transition: transform 0.2s ease;
-        }
-        #feedback-toggle:active .fb-icon { transform: scale(0.88); }
-        .fb-text {
-            white-space: nowrap;
-            opacity: 0;
-            transition: opacity 0.2s ease 0.1s;
-            padding-right: 12px;
-        }
-        #feedback-toggle:hover .fb-text { opacity: 1; }
+        #feedback-toggle:active { transform: scale(0.96); }
+        .fb-icon { display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 
         /* sub-botões */
         .fb-sub-btns {
             display: flex;
             flex-direction: column;
             align-items: flex-end;
-            gap: 6px;
+            gap: 5px;
             overflow: hidden;
             max-height: 0;
             opacity: 0;
@@ -631,11 +615,14 @@
         .fb-sub-btns.open { max-height: 120px; opacity: 1; }
 
         .fb-sub-btn {
-            padding: 8px 16px;
-            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 14px;
+            border-radius: 20px;
             border: 1px solid var(--border);
-            background: rgba(6,9,11,0.95);
-            color: var(--text);
+            background: rgba(6,9,11,0.92);
+            color: #8a9aaa;
             font-family: 'Syne', sans-serif;
             font-size: 11px;
             font-weight: 700;
@@ -646,7 +633,7 @@
             transition: all 0.2s ease;
             white-space: nowrap;
         }
-        .fb-sub-btn:hover { border-color: var(--pink); color: var(--pink); }
+        .fb-sub-btn:hover { border-color: var(--pink); color: var(--pink); background: rgba(218,72,149,0.06); }
 
         /* modal feedback */
         .fb-modal-overlay {
@@ -1230,11 +1217,11 @@
     <div id="feedback-widget">
         <button id="feedback-toggle" onclick="toggleFeedback()">
             <span class="fb-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                 </svg>
             </span>
-            <span class="fb-text">Feedback</span>
+            Feedback
         </button>
         <div class="fb-sub-btns" id="fb-sub-btns">
             <button class="fb-sub-btn" onclick="abrirModal('avaliar')">⭐ Avaliar</button>
