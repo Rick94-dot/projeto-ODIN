@@ -494,7 +494,7 @@
         const ROTAS = {
             'Odontoprev': { buscar: '/buscar/odontoprev', exportar: '/exportar/odontoprev' },
             'Unimed':     { buscar: '/buscar/unimed',     exportar: '/exportar/unimed' },
-            'Metlife':    { buscar: '/buscar/odontoprev', exportar: '/exportar/odontoprev' },
+            'Metlife':    { buscar: '/buscar/metlife',    exportar: '/exportar/metlife' },
             'Hapvida':    { buscar: '/buscar/odontoprev', exportar: '/exportar/odontoprev' },
         };
         const rota = ROTAS[operadora] || ROTAS['Odontoprev'];
@@ -601,14 +601,26 @@
                     <div class="card-nome">${d.nome}</div>
                     <div class="card-dist">
                         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                        ${d.distancia.replace('à ','')}
+                        ${d.distancia ? d.distancia.replace('à ','') : 'N/D'}
                     </div>
                     <div class="card-esps">${esps}</div>
                     <div class="card-info">
+                        ${d.cro ? `<div class="info-row">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3H8L2 7h20z"/></svg>
+                            CRO: ${d.cro}
+                        </div>` : ''}
+                        ${d.cnpj ? `<div class="info-row">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                            CNPJ: ${d.cnpj}
+                        </div>` : ''}
                         <div class="info-row">
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                             ${d.endereco}
                         </div>
+                        ${d.email ? `<div class="info-row">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                            ${d.email}
+                        </div>` : ''}
                     </div>
                     <div class="card-actions">
                         ${telLink}
@@ -650,20 +662,23 @@
                 const linhas = data.dentistas.map((d, i) => ({
                     '#':              i + 1,
                     'Nome':           d.nome,
+                    'CRO':            d.cro || '',
+                    'CNPJ':           d.cnpj || '',
                     'Especialidades': d.especialidades.replace(/\|/g, '/').trim(),
                     'Telefone':       d.telefone || '',
                     'WhatsApp':       d.whatsapp || '',
+                    'Email':          d.email || '',
                     'Endereço':       d.endereco,
-                    'Distância':      d.distancia.replace('à ',''),
+                    'Distância':      d.distancia ? d.distancia.replace('à ','') : '',
                     'Link Detalhes':  d.linkDetalhes || '',
                 }));
 
                 const ws = XLSX.utils.json_to_sheet(linhas);
                 const wb = XLSX.utils.book_new();
                 ws['!cols'] = [
-                    { wch: 5 }, { wch: 35 }, { wch: 30 },
-                    { wch: 16 }, { wch: 16 }, { wch: 45 },
-                    { wch: 12 }, { wch: 60 },
+                    { wch: 5 }, { wch: 35 }, { wch: 10 }, { wch: 18 },
+                    { wch: 30 }, { wch: 16 }, { wch: 16 }, { wch: 30 },
+                    { wch: 45 }, { wch: 12 }, { wch: 60 },
                 ];
                 XLSX.utils.book_append_sheet(wb, ws, 'Prestadores');
 
