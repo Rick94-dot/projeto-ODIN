@@ -850,7 +850,7 @@
     <script>
     // ── Guarda de autenticação ─────────────────────────
     if (!localStorage.getItem('odin_token')) {
-        window.location.replace('/projeto-ODIN/login.html');
+        window.location.replace('/login.html');
     }
     </script>
 
@@ -1197,7 +1197,7 @@
             const espCodigo = todasEsps ? 'todas' : esps.join(',');
             const espNome   = todasEsps ? 'Todas' : esps.map(v => ESPECIALIDADES.find(e => e.value === v)?.label).filter(Boolean).join(', ');
 
-            const url = `/projeto-ODIN/resultados.html?cidade=${encodeURIComponent(cidadeFormatada)}&operadora=${encodeURIComponent(operadora)}&especialidade=${encodeURIComponent(espCodigo)}&espNome=${encodeURIComponent(espNome)}&lat=${encodeURIComponent(selectedLat)}&lng=${encodeURIComponent(selectedLng)}`;
+            const url = `/resultados.html?cidade=${encodeURIComponent(cidadeFormatada)}&operadora=${encodeURIComponent(operadora)}&especialidade=${encodeURIComponent(espCodigo)}&espNome=${encodeURIComponent(espNome)}&lat=${encodeURIComponent(selectedLat)}&lng=${encodeURIComponent(selectedLng)}`;
             window.location.href = url;
         }
 
