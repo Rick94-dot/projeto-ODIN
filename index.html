@@ -762,11 +762,22 @@
         .fb-btn-send:hover { filter: brightness(1.15); }
 
         /* ── Responsivo ───────────────────────────────────── */
-        @media (max-width: 480px) {
-            .logo { width: 75vw; top: 30px; }
-            #poda { width: min(90vw, 340px); }
+        @media (max-width: 600px) {
+            .logo { width: min(80vw, 340px); top: 24px; }
+            .logo-fallback { top: 28px; font-size: 22px; }
+            #poda { width: min(88vw, 340px); margin-top: 130px; }
+            #poda.city-selected { margin-top: 60px; }
             .glow { display: none; }
             #feedback-widget { top: 12px; right: 12px; }
+            #operator-panel { border-radius: 14px; padding: 16px 14px 14px; }
+            .operators-grid { gap: 5px; }
+            .checkbox-wrapper { padding: 8px 10px; }
+        }
+
+        @media (max-width: 380px) {
+            .logo { width: 75vw; top: 18px; }
+            #poda { width: 92vw; margin-top: 110px; }
+            .operators-grid { grid-template-columns: 1fr; }
         }
 
         /* ── Mobile: permite scroll quando painel está aberto ── */
@@ -777,6 +788,10 @@
         }
         body.panel-open #poda {
             margin-top: 140px !important;
+        }
+
+        @media (max-width: 600px) {
+            body.panel-open #poda { margin-top: 110px !important; }
         }
     </style>
 </head>
