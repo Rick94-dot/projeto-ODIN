@@ -1,9 +1,1369 @@
-<!DOCTYPE html> 
-<html> 
-<head> 
-    <meta charset="UTF-8"> 
-    <meta http-equiv="refresh" content="0; url=/login.html"> 
-    <script>window.location.href = '/login.html';</script> 
-</head> 
-<body></body> 
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projeto ODIN • Busca IBGE</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        /* ── Reset & Base ─────────────────────────────────── */
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --pink:    #da4895;
+            --blue:    #257899;
+            --bg:      #000;
+            --surface: #080b0d;
+            --border:  #1a2428;
+            --text:    #e8e8e8;
+            --muted:   #667;
+
+            /* gradiente da marca */
+            --grad: linear-gradient(135deg, var(--blue), var(--pink));
+            --grad-r: linear-gradient(135deg, var(--pink), var(--blue));
+        }
+
+        body {
+            background: var(--bg);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            font-family: 'DM Sans', system-ui, sans-serif;
+            position: relative;
+        }
+
+        /* ── Logo ─────────────────────────────────────────── */
+        .logo {
+            position: absolute;
+            top: 45px;
+            width: 460px;
+            z-index: 5;
+            animation: logoIn 0.9s cubic-bezier(0.22,1,0.36,1) both;
+        }
+        @keyframes logoIn {
+            from { opacity: 0; transform: translateY(-18px) scale(0.96); }
+            to   { opacity: 1; transform: translateY(0)     scale(1); }
+        }
+        .logo-fallback {
+            position: absolute;
+            top: 38px;
+            font-family: 'Syne', sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: 8px;
+            background: var(--grad);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            z-index: 5;
+            display: none;
+        }
+        .logo.broken { display: none; }
+        .logo.broken + .logo-fallback { display: block; }
+
+        /* ── Estrelas ─────────────────────────────────────── */
+        .star {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0;
+            animation: starIn 1s ease forwards, twinkle var(--dur, 2s) infinite ease-in-out var(--tin, 1s);
+            pointer-events: none;
+            z-index: 0;
+        }
+        @keyframes starIn {
+            to { opacity: var(--op, 0.6); }
+        }
+        @keyframes twinkle {
+            0%, 100% { opacity: var(--op, 0.6); transform: scale(1); }
+            50%       { opacity: calc(var(--op, 0.6) * 0.25); transform: scale(0.6); }
+        }
+
+        /* ── Wrapper principal ────────────────────────────── */
+        #poda {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 340px;
+            height: 70px;
+            z-index: 10;
+            margin-top: 160px;
+            animation: podaIn 0.8s 0.2s cubic-bezier(0.22,1,0.36,1) both;
+            transition: margin-top 0.5s cubic-bezier(0.4,0,0.2,1);
+        }
+        @keyframes podaIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        #poda.city-selected { margin-top: 70px; }
+
+        /* ── Camadas de brilho da barra ───────────────────── */
+        .glow, .darkBorderBg, .white, .border {
+            position: absolute;
+            height: 100%; width: 100%;
+            overflow: hidden; border-radius: 12px; z-index: -1;
+        }
+        .glow { filter: blur(32px); opacity: 0.45; max-height: 130px; max-width: 400px; }
+        .glow::before {
+            content: ""; position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%,-50%) rotate(60deg);
+            width: 999px; height: 999px;
+            background-image: conic-gradient(#000, #257899 5%, #000 38%, #000 50%, #da4895 60%, #000 87%);
+            transition: transform 2s ease;
+        }
+        .darkBorderBg { max-height: 65px; max-width: 360px; }
+        .darkBorderBg::before {
+            content: ""; position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%,-50%) rotate(82deg);
+            width: 600px; height: 600px;
+            background-image: conic-gradient(rgba(0,0,0,0), #0d3040, rgba(0,0,0,0) 10%, rgba(0,0,0,0) 50%, #5c1638, rgba(0,0,0,0) 60%);
+            transition: transform 2s ease;
+        }
+        .white { max-height: 63px; max-width: 355px; border-radius: 10px; filter: blur(2px); }
+        .white::before {
+            content: ""; position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%,-50%) rotate(83deg);
+            width: 600px; height: 600px;
+            background-image: conic-gradient(rgba(0,0,0,0) 0%, #7ab8cc, rgba(0,0,0,0) 8%, rgba(0,0,0,0) 50%, #d87aaa, rgba(0,0,0,0) 58%);
+            filter: brightness(1.5);
+            transition: transform 2s ease;
+        }
+        .border { max-height: 59px; max-width: 350px; border-radius: 11px; filter: blur(0.5px); }
+        .border::before {
+            content: ""; position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%,-50%) rotate(70deg);
+            width: 600px; height: 600px;
+            background-image: conic-gradient(#0d0d0d, #257899 5%, #0d0d0d 14%, #0d0d0d 50%, #da4895 60%, #0d0d0d 64%);
+            filter: brightness(1.4);
+            transition: transform 2s ease;
+        }
+
+        #poda:hover .glow::before,
+        #poda:hover .darkBorderBg::before,
+        #poda:hover .white::before,
+        #poda:hover .border::before { transform: translate(-50%,-50%) rotate(240deg); }
+
+        #poda:focus-within .glow::before,
+        #poda:focus-within .darkBorderBg::before,
+        #poda:focus-within .white::before,
+        #poda:focus-within .border::before {
+            transform: translate(-50%,-50%) rotate(420deg);
+            transition-duration: 4s;
+        }
+
+        /* ── Input ────────────────────────────────────────── */
+        #main { position: relative; width: 100%; height: 56px; }
+
+        .input {
+            background: #060a0c;
+            border: none;
+            width: 100%; height: 100%;
+            border-radius: 10px;
+            color: white;
+            padding: 0 50px 0 52px;
+            font-size: 17px;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 500;
+            letter-spacing: 0.2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .input::placeholder { color: #4a6070; }
+        .input:focus { outline: none; }
+
+        #search-icon {
+            position: absolute; left: 18px; top: 50%;
+            transform: translateY(-50%); z-index: 3;
+            transition: opacity 0.2s ease;
+        }
+
+        /* Spinner */
+        #search-icon .spinner {
+            display: none;
+            width: 22px; height: 22px;
+            border: 2px solid rgba(37,120,153,0.3);
+            border-top-color: var(--blue);
+            border-right-color: var(--pink);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        #search-icon.loading svg    { display: none; }
+        #search-icon.loading .spinner { display: block; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        #clear-btn {
+            position: absolute;
+            right: 16px; top: 50%;
+            transform: translateY(-50%);
+            color: var(--pink);
+            font-size: 16px;
+            cursor: pointer;
+            z-index: 4;
+            width: 26px; height: 26px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.2s ease, background 0.2s ease, transform 0.2s ease;
+        }
+        #clear-btn.show { opacity: 1; }
+        #clear-btn:hover { background: rgba(218,72,149,0.15); transform: translateY(-50%) rotate(90deg); }
+
+        /* ── Dropdown resultados ──────────────────────────── */
+        #results {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0; width: 100%;
+            max-height: 300px;
+            background: var(--surface);
+            border-radius: 14px;
+            border: 1px solid rgba(37,120,153,0.25);
+            box-shadow: 0 8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(218,72,149,0.08);
+            overflow-y: auto;
+            z-index: 20;
+            display: none;
+            flex-direction: column;
+            padding: 5px 0;
+            scrollbar-width: thin;
+            scrollbar-color: var(--blue) transparent;
+            animation: dropIn 0.25s cubic-bezier(0.22,1,0.36,1);
+        }
+        @keyframes dropIn {
+            from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+            to   { opacity: 1; transform: translateY(0)    scale(1); }
+        }
+        #results.show { display: flex; }
+
+        .result-item {
+            padding: 10px 16px;
+            color: var(--text);
+            font-size: 14.5px;
+            cursor: pointer;
+            transition: background 0.15s ease, padding-left 0.2s ease;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .result-item:last-child { border-bottom: none; }
+        .result-item:hover {
+            background: rgba(37,120,153,0.12);
+            padding-left: 20px;
+        }
+        .result-item .city {
+            font-weight: 600;
+            font-family: 'Syne', sans-serif;
+            font-size: 14px;
+        }
+        .result-item .uf {
+            font-size: 10.5px;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            padding: 2px 7px;
+            border-radius: 5px;
+            /* alterna rosa e azul com gradiente */
+            background: linear-gradient(135deg, rgba(218,72,149,0.18), rgba(37,120,153,0.18));
+            border: 1px solid rgba(218,72,149,0.3);
+            color: #e08ab8;
+        }
+        .no-results { padding: 18px; text-align: center; color: var(--muted); font-size: 13.5px; }
+
+        /* ── Painel de Operadoras ─────────────────────────── */
+        #operator-panel {
+            position: absolute;
+            top: calc(100% + 10px);
+            left: 0; width: 100%;
+            background: rgba(6,9,11,0.97);
+            border-radius: 18px;
+            border: 1px solid rgba(37,120,153,0.3);
+            box-shadow:
+                0 0 0 1px rgba(218,72,149,0.1),
+                0 20px 60px rgba(0,0,0,0.7),
+                inset 0 1px 0 rgba(255,255,255,0.04);
+            padding: 20px 18px 18px;
+            z-index: 30;
+            opacity: 0;
+            transform: translateY(-10px) scale(0.98);
+            pointer-events: none;
+            transition: opacity 0.4s cubic-bezier(0.22,1,0.36,1),
+                        transform 0.4s cubic-bezier(0.22,1,0.36,1);
+        }
+        #operator-panel.show {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: all;
+        }
+
+        .panel-title {
+            text-align: center;
+            font-family: 'Syne', sans-serif;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2.5px;
+            margin-bottom: 14px;
+            /* gradiente no texto */
+            background: var(--grad);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .operators-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 7px;
+        }
+
+        /* Radio estilizado */
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding: 10px 12px;
+            border-radius: 11px;
+            cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.05);
+            background: rgba(255,255,255,0.02);
+            transition: border-color 0.25s ease,
+                        background   0.25s ease,
+                        transform    0.15s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        /* shimmer ao hover */
+        .checkbox-wrapper::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.4s ease;
+        }
+        .checkbox-wrapper:hover::before { transform: translateX(100%); }
+        .checkbox-wrapper:hover {
+            border-color: rgba(37,120,153,0.4);
+            background: rgba(37,120,153,0.06);
+            transform: translateY(-1px);
+        }
+        .checkbox-wrapper:has(input:checked) {
+            border-color: var(--pink);
+            background: rgba(218,72,149,0.08);
+            box-shadow: 0 0 16px rgba(218,72,149,0.2), inset 0 0 12px rgba(218,72,149,0.05);
+        }
+        .checkbox-wrapper input { position: absolute; opacity: 0; width: 0; height: 0; }
+
+        .checkmark {
+            width: 20px; height: 20px;
+            border: 1.5px solid rgba(37,120,153,0.5);
+            border-radius: 50%; /* circular para indicar radio */
+            background: rgba(0,0,0,0.4);
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        .checkbox-wrapper input:checked ~ .checkmark {
+            border-color: var(--pink);
+            background: rgba(218,72,149,0.15);
+            box-shadow: 0 0 10px rgba(218,72,149,0.5);
+        }
+        .checkmark svg {
+            width: 0; height: 0;
+            color: var(--pink);
+            transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        .checkbox-wrapper input:checked ~ .checkmark svg { width: 12px; height: 12px; }
+
+        .label {
+            color: #a0b0b8;
+            font-size: 13.5px;
+            font-weight: 500;
+            font-family: 'DM Sans', sans-serif;
+            user-select: none;
+            transition: color 0.2s ease;
+        }
+        .checkbox-wrapper:has(input:checked) .label { color: #f0c0d8; }
+
+        /* ── "Todas" operadoras toggle ────────────────────── */
+        .all-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            padding: 7px 0 12px;
+            cursor: pointer;
+            font-family: 'Syne', sans-serif;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #556677;
+            transition: color 0.2s ease;
+            user-select: none;
+        }
+        .all-toggle:hover { color: #a0b8c8; }
+        .all-toggle.active { color: var(--blue); }
+        .all-dot {
+            width: 14px; height: 14px;
+            border: 1.5px solid rgba(37,120,153,0.4);
+            border-radius: 4px;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.25s ease;
+            flex-shrink: 0;
+        }
+        .all-toggle.active .all-dot {
+            background: rgba(37,120,153,0.25);
+            border-color: var(--blue);
+            box-shadow: 0 0 8px rgba(37,120,153,0.4);
+        }
+        .all-dot-inner {
+            width: 6px; height: 6px;
+            border-radius: 2px;
+            background: var(--blue);
+            opacity: 0; transform: scale(0);
+            transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        .all-toggle.active .all-dot-inner { opacity: 1; transform: scale(1); }
+
+        /* ── Especialidade ────────────────────────────────── */
+        #specialty-section {
+            overflow: hidden;
+            max-height: 0;
+            opacity: 0;
+            margin-top: 0;
+            transition: max-height 0.5s cubic-bezier(0.22,1,0.36,1),
+                        opacity    0.35s ease 0.05s,
+                        margin-top 0.5s ease;
+        }
+        #specialty-section.show {
+            max-height: 260px;
+            opacity: 1;
+            margin-top: 10px;
+        }
+
+        .specialty-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 9px;
+        }
+        .specialty-label {
+            font-family: 'Syne', sans-serif;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2.5px;
+            background: var(--grad-r);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .all-esp-btn {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 11px;
+            color: #556677;
+            cursor: pointer;
+            padding: 3px 8px;
+            border-radius: 5px;
+            border: 1px solid rgba(218,72,149,0.15);
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+        .all-esp-btn:hover { color: var(--pink); border-color: rgba(218,72,149,0.45); }
+        .all-esp-btn.active { color: var(--pink); border-color: var(--pink); background: rgba(218,72,149,0.1); }
+
+        /* chips */
+        .chips-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            padding-bottom: 2px;
+        }
+        .chip {
+            padding: 5px 11px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.06);
+            background: rgba(255,255,255,0.025);
+            color: #7a8a98;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 11.5px;
+            font-weight: 500;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s cubic-bezier(0.22,1,0.36,1);
+            white-space: nowrap;
+        }
+        .chip:hover {
+            border-color: rgba(218,72,149,0.4);
+            color: #c8a8b8;
+            background: rgba(218,72,149,0.07);
+            transform: translateY(-1px);
+        }
+        .chip.selected {
+            border-color: var(--pink);
+            background: rgba(218,72,149,0.14);
+            color: #f0c0d8;
+            box-shadow: 0 0 10px rgba(218,72,149,0.2);
+        }
+
+        /* ── Botão Buscar ─────────────────────────────────── */
+        #btn-buscar {
+            width: 100%;
+            border: none;
+            border-radius: 11px;
+            background: var(--grad);
+            color: white;
+            font-family: 'Syne', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            max-height: 0;
+            opacity: 0;
+            padding: 0 12px;
+            margin-top: 0;
+            pointer-events: none;
+            transition: max-height 0.45s cubic-bezier(0.22,1,0.36,1),
+                        opacity    0.3s ease 0.05s,
+                        padding    0.45s ease,
+                        margin-top 0.45s ease;
+        }
+        #btn-buscar::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: #000;
+            width: 120%; left: -10%;
+            transform: skew(30deg) translateX(110%);
+            transition: transform 0.45s cubic-bezier(0.3,1,0.8,1);
+            z-index: 0;
+        }
+        #btn-buscar:hover::before { transform: skew(30deg) translateX(0%); }
+        #btn-buscar span {
+            position: relative;
+            z-index: 1;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        #btn-buscar.show {
+            max-height: 56px;
+            opacity: 1;
+            padding: 13px 12px;
+            margin-top: 10px;
+            pointer-events: all;
+        }
+        #btn-buscar:active { transform: scale(0.97); }
+
+        /* ── Botão Feedback ───────────────────────────────── */
+        #feedback-widget {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 6px;
+        }
+        #feedback-toggle {
+            display: flex;
+            align-items: center;
+            height: 38px;
+            padding: 0 14px 0 10px;
+            border-radius: 20px;
+            border: 1px solid rgba(218,72,149,0.35);
+            background: rgba(6,9,11,0.92);
+            color: #e08ab8;
+            font-family: 'Syne', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            cursor: pointer;
+            gap: 7px;
+            backdrop-filter: blur(12px);
+            transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+            white-space: nowrap;
+        }
+        #feedback-toggle:hover {
+            border-color: var(--pink);
+            box-shadow: 0 0 16px rgba(218,72,149,0.2);
+        }
+        #feedback-toggle:active { transform: scale(0.96); }
+        .fb-icon { display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+        /* sub-botões */
+        .fb-sub-btns {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 5px;
+            overflow: hidden;
+            max-height: 0;
+            opacity: 0;
+            transition: max-height 0.4s cubic-bezier(0.22,1,0.36,1), opacity 0.3s ease;
+        }
+        .fb-sub-btns.open { max-height: 120px; opacity: 1; }
+
+        .fb-sub-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 14px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background: rgba(6,9,11,0.92);
+            color: #8a9aaa;
+            font-family: 'Syne', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            backdrop-filter: blur(12px);
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+        .fb-sub-btn:hover { border-color: var(--pink); color: var(--pink); background: rgba(218,72,149,0.06); }
+
+        /* modal feedback */
+        .fb-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(6px);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .fb-modal-overlay.open { opacity: 1; pointer-events: all; }
+
+        .fb-modal {
+            background: rgba(8,11,13,0.98);
+            border: 1px solid rgba(37,120,153,0.3);
+            border-radius: 18px;
+            padding: 28px 26px;
+            width: 340px;
+            max-width: 90vw;
+            box-shadow: 0 0 0 1px rgba(218,72,149,0.08), 0 30px 80px rgba(0,0,0,0.8);
+            transform: translateY(20px) scale(0.97);
+            transition: transform 0.35s cubic-bezier(0.22,1,0.36,1);
+        }
+        .fb-modal-overlay.open .fb-modal { transform: translateY(0) scale(1); }
+
+        .fb-modal-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            background: var(--grad);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 6px;
+        }
+        .fb-modal-subtitle {
+            font-family: 'Syne', sans-serif;
+            font-size: 17px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        /* estrelas */
+        .star-rating {
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: flex-end;
+            gap: 4px;
+            margin-bottom: 16px;
+        }
+        .star-rating input { display: none; }
+        .star-rating label {
+            font-size: 32px;
+            color: #2a3540;
+            cursor: pointer;
+            transition: color 0.2s ease, transform 0.15s ease;
+            line-height: 1;
+        }
+        .star-rating label:hover,
+        .star-rating label:hover ~ label,
+        .star-rating input:checked ~ label {
+            color: var(--pink);
+        }
+        .star-rating label:hover { transform: scale(1.15); }
+
+        /* textarea feedback */
+        .fb-textarea {
+            width: 100%;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: white;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13.5px;
+            padding: 11px 14px;
+            resize: none;
+            height: 90px;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            margin-bottom: 14px;
+        }
+        .fb-textarea::placeholder { color: var(--muted); }
+        .fb-textarea:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,120,153,0.15); }
+
+        .fb-modal-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+        .fb-btn-cancel {
+            padding: 9px 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--muted);
+            font-family: 'Syne', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .fb-btn-cancel:hover { border-color: var(--pink); color: var(--pink); }
+        .fb-btn-send {
+            padding: 9px 18px;
+            border-radius: 8px;
+            border: none;
+            background: var(--grad);
+            color: white;
+            font-family: 'Syne', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: filter 0.2s ease;
+        }
+        .fb-btn-send:hover { filter: brightness(1.15); }
+
+        /* ── Responsivo ───────────────────────────────────── */
+        @media (max-width: 600px) {
+            .logo { width: min(80vw, 340px); top: 24px; }
+            .logo-fallback { top: 28px; font-size: 22px; }
+            #poda { width: min(88vw, 340px); margin-top: 130px; }
+            #poda.city-selected { margin-top: 60px; }
+            .glow { display: none; }
+            #feedback-widget { top: 12px; right: 12px; }
+            #operator-panel { border-radius: 14px; padding: 16px 14px 14px; }
+            .operators-grid { gap: 5px; }
+            .checkbox-wrapper { padding: 8px 10px; }
+        }
+
+        @media (max-width: 380px) {
+            .logo { width: 75vw; top: 18px; }
+            #poda { width: 92vw; margin-top: 110px; }
+            .operators-grid { grid-template-columns: 1fr; }
+        }
+
+        /* ── Mobile: permite scroll quando painel está aberto ── */
+        body.panel-open {
+            overflow-y: auto;
+            align-items: center;
+            padding-bottom: 60px;
+        }
+        body.panel-open #poda {
+            margin-top: 140px !important;
+        }
+
+        @media (max-width: 600px) {
+            body.panel-open #poda { margin-top: 110px !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <img src="PROJETO ODIN LOGO FINAL.png" alt="Projeto ODIN" class="logo" id="logo-img">
+    <div class="logo-fallback">PROJETO ODIN</div>
+
+    <div id="poda">
+        <div class="glow"></div>
+        <div class="darkBorderBg"></div>
+        <div class="darkBorderBg"></div>
+        <div class="darkBorderBg"></div>
+        <div class="white"></div>
+        <div class="border"></div>
+
+        <div id="main">
+            <input type="text" class="input" placeholder="Cidade ou UF..." id="search-input" autocomplete="off" spellcheck="false">
+            <div id="search-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
+                    <circle stroke="url(#sg)" r="8" cy="11" cx="11"/>
+                    <line stroke="url(#sl)" y2="16.65" y1="22" x2="16.65" x1="22"/>
+                    <defs>
+                        <linearGradient gradientTransform="rotate(50)" id="sg"><stop stop-color="#f8e7f8" offset="0%"/><stop stop-color="#b6a9b7" offset="50%"/></linearGradient>
+                        <linearGradient id="sl"><stop stop-color="#b6a9b7" offset="0%"/><stop stop-color="#837484" offset="50%"/></linearGradient>
+                    </defs>
+                </svg>
+                <div class="spinner"></div>
+            </div>
+            <div id="clear-btn" role="button" aria-label="Limpar busca">✕</div>
+        </div>
+
+        <div id="results" role="listbox" aria-label="Cidades encontradas"></div>
+
+        <!-- Painel de Operadoras -->
+        <div id="operator-panel">
+            <div class="panel-title">Selecione a operadora</div>
+            <div class="operators-grid" id="operators-grid"></div>
+
+            <!-- Especialidade -->
+            <div id="specialty-section">
+                <div class="specialty-header">
+                    <span class="specialty-label">Especialidade</span>
+                    <span class="all-esp-btn" id="all-esp-btn">Todas</span>
+                </div>
+                <div class="chips-grid" id="chips-grid"></div>
+            </div>
+
+            <button id="btn-buscar" aria-label="Iniciar busca"><span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                Buscar
+            </span></button>
+        </div>
+    </div>
+
+    <script>
+    // ── Guarda de autenticação ─────────────────────────
+    if (!localStorage.getItem('odin_token')) {
+        window.location.replace('/projeto-ODIN/login.html');
+    }
+    </script>
+
+    <script>
+    (() => {
+        'use strict';
+
+        /* ── Config ──────────────────────────────────────── */
+        const IBGE_API = 'https://servicodados.ibge.gov.br/api/v1/localidades/municipios?orderBy=nome';
+        const OPERADORAS = ['Odontoprev', 'Unimed', 'Metlife', 'Hapvida'];
+
+        const ESPECIALIDADES_POR_OPERADORA = {
+            'Odontoprev': [
+                { label: 'Clínico Geral',    value: 'clinico geral' },
+                { label: 'Ortodontia',       value: 'ortodontia' },
+                { label: 'Endodontia',       value: 'endodontia' },
+                { label: 'Periodontia',      value: 'periodontia' },
+                { label: 'Cirurgia',         value: 'cirurgia' },
+                { label: 'Odontopediatria',  value: 'odontopediatria' },
+                { label: 'Prótese Dentária', value: 'protese dentaria' },
+                { label: 'Radiologia',       value: 'radiologia' },
+            ],
+            'Unimed': [
+                { label: 'Cirurgia',                  value: 'cirurgia' },
+                { label: 'Clínico Geral',             value: 'clinica geral' },
+                { label: 'Dentística',                value: 'dentistica' },
+                { label: 'Endodontia',                value: 'endodontia' },
+                { label: 'Odontopediatria',           value: 'odontopediatria' },
+                { label: 'Ortodontia',                value: 'ortodontia' },
+                { label: 'Pacientes Especiais',       value: 'pacientes especiais' },
+                { label: 'Periodontia',               value: 'periodontia' },
+                { label: 'Prótese',                   value: 'protese' },
+                { label: 'Radiologia',                value: 'radiologia' },
+                { label: 'Urgência (Hora Comercial)', value: 'urgencia' },
+                { label: 'Urgência (24 horas)',       value: 'urgencia 24' },
+            ],
+            'Metlife': [
+                { label: 'Cirurgia',            value: 'cirurgia' },
+                { label: 'Clínico Geral',       value: 'clinica geral' },
+                { label: 'Dentística',          value: 'dentistica' },
+                { label: 'Endodontia',          value: 'endodontia' },
+                { label: 'Odontopediatria',     value: 'odontopediatria' },
+                { label: 'Ortodontia',          value: 'ortodontia' },
+                { label: 'Pacientes Especiais', value: 'pacientes especiais' },
+                { label: 'Periodontia',         value: 'periodontia' },
+                { label: 'Prótese',             value: 'protese' },
+                { label: 'Urgência',            value: 'urgencia' },
+                { label: 'Urgência 24 Horas',   value: 'urgencia 24 horas' },
+                { label: 'Urgência Diurna',     value: 'urgencia diurna' },
+            ],
+            'Hapvida': [
+                { label: 'Cirurgia',         value: 'cirurgia' },
+                { label: 'Endodontia',       value: 'endodontia' },
+                { label: 'Clínico Geral',    value: 'clinico geral' },
+                { label: 'Odontopediatria',  value: 'odontopediatria' },
+                { label: 'Ortodontia',       value: 'ortodontia' },
+                { label: 'Periodontia',      value: 'periodontia' },
+                { label: 'Prótese Dentária', value: 'protese dentaria' },
+                { label: 'Radiologia',       value: 'radiologia' },
+            ],
+        };
+
+        // Especialidades da operadora selecionada (começa vazio)
+        let ESPECIALIDADES = [];
+        const MAX_RESULTS = 12;
+        const DEBOUNCE_MS = 220;
+
+        /* ── Estado ──────────────────────────────────────── */
+        let municipios = [];
+        let debounceTimer = null;
+        let selectedCity = null;
+        let selectedLat  = '-23.519516199999998';
+        let selectedLng  = '-46.8366591';
+        let selectedIbgeId = null;
+        let selectedEsps = new Set();
+        let todasEsps = false;
+        let todasOps  = false;
+
+        /* ── Elementos ───────────────────────────────────── */
+        const $ = id => document.getElementById(id);
+        const input          = $('search-input');
+        const results        = $('results');
+        const clearBtn       = $('clear-btn');
+        const searchIcon     = $('search-icon');
+        const poda           = $('poda');
+        const operatorPanel  = $('operator-panel');
+        const specialtySection = $('specialty-section');
+        const allEspBtn      = $('all-esp-btn');
+        const chipsGrid      = $('chips-grid');
+        const btnBuscar      = $('btn-buscar');
+        const logoImg        = $('logo-img');
+
+        /* ── Logo fallback ───────────────────────────────── */
+        logoImg.addEventListener('error', () => logoImg.classList.add('broken'));
+
+        /* ── Estrelas ────────────────────────────────────── */
+        function createStars(n = 280) {
+            const frag = document.createDocumentFragment();
+            const colors = ['#ffffff', '#ffffff', '#ffffff', '#a8d8e8', '#e8a8c8', '#7ab8cc', '#d87aaa'];
+            for (let i = 0; i < n; i++) {
+                const s = document.createElement('div');
+                s.className = 'star';
+                const size = Math.random() * 2.2 + 0.4;
+                const op   = (Math.random() * 0.5 + 0.2).toFixed(2);
+                const col  = colors[Math.floor(Math.random() * colors.length)];
+                Object.assign(s.style, {
+                    width:    `${size}px`,
+                    height:   `${size}px`,
+                    left:     `${Math.random() * 100}vw`,
+                    top:      `${Math.random() * 100}vh`,
+                    background: col,
+                    '--dur':  `${(Math.random() * 4 + 1.5).toFixed(2)}s`,
+                    '--delay':`${(Math.random() * 4).toFixed(2)}s`,
+                    '--tin':  `${(Math.random() * 2 + 0.5).toFixed(2)}s`,
+                    '--op':   op,
+                    animationDelay: `${(Math.random() * 2).toFixed(2)}s`,
+                });
+                frag.appendChild(s);
+            }
+            document.body.appendChild(frag);
+        }
+
+        /* ── Normalização ─────────────────────────────────── */
+        function normalize(str) {
+            return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+        }
+
+        /* ── Carrega municípios direto no IBGE ────────────── */
+        async function carregarMunicipios() {
+            searchIcon.classList.add('loading');
+            try {
+                const res  = await fetch(IBGE_API);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const data = await res.json();
+                municipios = data.map(m => {
+                    const uf = m.microrregiao?.mesorregiao?.UF?.sigla ?? '?';
+                    return {
+                        nome:      m.nome,
+                        uf,
+                        id:        m.id,
+                        texto:     `${m.nome}, ${uf}`,
+                        nomeNorm:  normalize(m.nome),
+                        ufNorm:    uf.toLowerCase(),
+                    };
+                });
+            } catch (err) {
+                console.error('[ODIN] Falha ao carregar municípios:', err);
+            } finally {
+                searchIcon.classList.remove('loading');
+            }
+        }
+
+        /* ── Filtragem otimizada ──────────────────────────── */
+        function filtrar(termo) {
+            if (!termo || termo.length < 2) {
+                fecharResults();
+                return;
+            }
+            const t = normalize(termo);
+            const isUF = t.length <= 2;
+
+            const lista = municipios.filter(m =>
+                isUF
+                    ? m.ufNorm.startsWith(t)
+                    : m.nomeNorm.includes(t) || m.ufNorm.includes(t)
+            );
+
+            // Ordena: começa com o termo > contém o termo
+            lista.sort((a, b) => {
+                const aStart = a.nomeNorm.startsWith(t) ? 0 : 1;
+                const bStart = b.nomeNorm.startsWith(t) ? 0 : 1;
+                return aStart - bStart || a.nome.localeCompare(b.nome, 'pt-BR');
+            });
+
+            renderResults(lista.slice(0, MAX_RESULTS), termo);
+        }
+
+        function renderResults(lista, termo) {
+            if (lista.length === 0) {
+                results.innerHTML = `<div class="no-results">Nenhuma cidade encontrada para "<strong>${termo}</strong>"</div>`;
+            } else {
+                results.innerHTML = lista.map(r =>
+                    `<div class="result-item" role="option" data-value="${r.texto}" data-id="${r.id}">
+                        <span class="city">${r.nome}</span>
+                        <span class="uf">${r.uf}</span>
+                    </div>`
+                ).join('');
+            }
+            results.classList.add('show');
+        }
+
+        function fecharResults() {
+            results.classList.remove('show');
+            results.innerHTML = '';
+        }
+
+        /* ── Seleção de cidade ────────────────────────────── */
+        async function selecionarCidade(texto, ibgeId) {
+            selectedCity   = texto;
+            selectedIbgeId = ibgeId;
+            input.value    = texto;
+            fecharResults();
+            poda.classList.add('city-selected');
+            abrirPainel();
+            toggleClearBtn();
+
+            try {
+                // Extrai nome e UF de "Rio Branco, AC"
+                const partes    = texto.split(', ');
+                const nomeCidade = partes[0].trim();
+                const uf         = (partes[1] || '').trim();
+
+                const geoRes  = await fetch(`https://nominatim.openstreetmap.org/search?city=${encodeURIComponent(nomeCidade)}&state=${encodeURIComponent(uf)}&country=Brazil&format=json&limit=1`, {
+                    headers: { 'Accept-Language': 'pt-BR' }
+                });
+                const geoData = await geoRes.json();
+                if (geoData[0]?.lat) {
+                    selectedLat = geoData[0].lat;
+                    selectedLng = geoData[0].lon;
+                }
+            } catch(e) {
+                // mantém fallback de Carapicuíba
+            }
+        }
+
+        /* ── Limpar tudo ──────────────────────────────────── */
+        function limpar() {
+            selectedCity = null;
+            input.value  = '';
+            fecharResults();
+            fecharPainel();
+            poda.classList.remove('city-selected');
+            specialtySection.classList.remove('show');
+            btnBuscar.classList.remove('show');
+            selectedEsps.clear();
+            todasEsps = false;
+            todasOps  = false;
+            allEspBtn.classList.remove('active');
+            document.querySelectorAll('#operators-grid input').forEach(r => r.checked = false);            document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+            toggleClearBtn();
+            input.focus();
+        }
+
+        /* ── Botão limpar ─────────────────────────────────── */
+        function toggleClearBtn() {
+            clearBtn.classList.toggle('show', input.value.length > 0);
+        }
+
+        /* ── Atualiza visibilidade do botão Buscar ─────────── */
+        function atualizarBuscar() {
+            const temOp  = !!document.querySelector('#operators-grid input:checked');
+            const temEsp = todasEsps || selectedEsps.size > 0;
+            btnBuscar.classList.toggle('show', temOp && temEsp);
+        }
+
+        /* ── Cascata: operadora selecionada → mostra especialidade */
+        function atualizarEspecialidade() {
+            const temOp = !!document.querySelector('#operators-grid input:checked');
+            specialtySection.classList.toggle('show', temOp);
+            if (!temOp) {
+                selectedEsps.clear();
+                todasEsps = false;
+                allEspBtn.classList.remove('active');
+                document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+                btnBuscar.classList.remove('show');
+            }
+            atualizarBuscar();
+        }
+
+        function abrirPainel() {
+            operatorPanel.classList.add('show');
+            document.body.classList.add('panel-open');
+            setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 400);
+        }
+
+        function fecharPainel() {
+            operatorPanel.classList.remove('show');
+            document.body.classList.remove('panel-open');
+        }
+
+        /* ── Renderiza operadoras (radio — seleção única) ─── */
+        function renderOperadoras() {
+            const grid = $('operators-grid');
+            grid.innerHTML = OPERADORAS.map(op => `
+                <label class="checkbox-wrapper">
+                    <input type="radio" name="operadora" value="${op}">
+                    <div class="checkmark">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 6L9 17L4 12"/>
+                        </svg>
+                    </div>
+                    <span class="label">${op}</span>
+                </label>
+            `).join('');
+            grid.addEventListener('change', () => {
+                const op = document.querySelector('#operators-grid input:checked')?.value;
+                if (op) {
+                    // Atualiza especialidades da operadora selecionada
+                    ESPECIALIDADES = ESPECIALIDADES_POR_OPERADORA[op] || [];
+                    selectedEsps.clear();
+                    todasEsps = false;
+                    allEspBtn.classList.remove('active');
+                    renderChips();
+                }
+                todasOps = false;
+                atualizarEspecialidade();
+            });
+        }
+
+        /* ── Renderiza chips de especialidade ─────────────── */
+        function renderChips() {
+            chipsGrid.innerHTML = ESPECIALIDADES.map(e => `
+                <div class="chip" data-value="${e.value}" onclick="toggleChip(this)">${e.label}</div>
+            `).join('');
+        }
+
+        window.toggleChip = function(chip) {
+            todasEsps = false;
+            allEspBtn.classList.remove('active');
+            chip.classList.toggle('selected');
+            const val = chip.dataset.value;
+            selectedEsps.has(val) ? selectedEsps.delete(val) : selectedEsps.add(val);
+            atualizarBuscar();
+        };
+
+        /* ── Toggle "Todas" especialidades ────────────────── */
+        allEspBtn.addEventListener('click', () => {
+            todasEsps = !todasEsps;
+            allEspBtn.classList.toggle('active', todasEsps);
+            if (todasEsps) {
+                selectedEsps.clear();
+                document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+            }
+            atualizarBuscar();
+        });
+
+        /* ── Buscar ───────────────────────────────────────── */
+        function executarBusca() {
+            const operadora = document.querySelector('#operators-grid input:checked')?.value;
+            const esps = todasEsps ? ESPECIALIDADES.map(e => e.value) : [...selectedEsps];
+            if (!selectedCity || !operadora || esps.length === 0) return;
+
+            const cidadeFormatada = selectedCity.replace(', ', ' - ');
+            const espCodigo = todasEsps ? 'todas' : esps.join(',');
+            const espNome   = todasEsps ? 'Todas' : esps.map(v => ESPECIALIDADES.find(e => e.value === v)?.label).filter(Boolean).join(', ');
+
+            const url = `/projeto-ODIN/resultados.html?cidade=${encodeURIComponent(cidadeFormatada)}&operadora=${encodeURIComponent(operadora)}&especialidade=${encodeURIComponent(espCodigo)}&espNome=${encodeURIComponent(espNome)}&lat=${encodeURIComponent(selectedLat)}&lng=${encodeURIComponent(selectedLng)}`;
+            window.location.href = url;
+        }
+
+        /* ── Debounce util ────────────────────────────────── */
+        function debounce(fn, ms) {
+            return (...args) => {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => fn(...args), ms);
+            };
+        }
+
+        /* ── Event listeners ──────────────────────────────── */
+        const onInput = debounce(() => {
+            filtrar(input.value);
+            toggleClearBtn();
+            // se o usuário edita depois de selecionar cidade, reseta o painel
+            if (selectedCity && input.value !== selectedCity) {
+                selectedCity = null;
+                fecharPainel();
+                poda.classList.remove('city-selected');
+                specialtySection.classList.remove('show');
+                btnBuscar.classList.remove('show');
+                selectedEsps.clear();
+                todasEsps = false; todasOps = false;
+                allEspBtn.classList.remove('active');
+                document.querySelectorAll('#operators-grid input').forEach(cb => cb.checked = false);
+                document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+            }
+        }, DEBOUNCE_MS);
+
+        input.addEventListener('input', onInput);
+
+        results.addEventListener('click', e => {
+            const item = e.target.closest('.result-item');
+            if (item) selecionarCidade(item.dataset.value, item.dataset.id);
+        });
+
+        clearBtn.addEventListener('click', limpar);
+        btnBuscar.addEventListener('click', executarBusca);
+
+        input.addEventListener('keydown', e => {
+            if (e.key === 'Escape') fecharResults();
+        });
+
+        // Fecha resultados ao clicar fora
+        document.addEventListener('click', e => {
+            if (!poda.contains(e.target)) fecharResults();
+        });
+
+        /* ── Init ─────────────────────────────────────────── */
+        createStars();
+        renderOperadoras();
+        renderChips();
+        carregarMunicipios();
+
+    })();
+    </script>
+    <!-- ── Feedback Widget ─────────────────────────────── -->
+    <div id="feedback-widget">
+        <button id="feedback-toggle" onclick="toggleFeedback()">
+            <span class="fb-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+            </span>
+            Feedback
+        </button>
+        <div class="fb-sub-btns" id="fb-sub-btns">
+            <button class="fb-sub-btn" onclick="abrirModal('avaliar')">⭐ Avaliar</button>
+            <button class="fb-sub-btn" onclick="abrirModal('melhoria')">💡 Melhoria</button>
+        </div>
+    </div>
+
+    <!-- Modal Avaliar -->
+    <div class="fb-modal-overlay" id="modal-avaliar">
+        <div class="fb-modal">
+            <div class="fb-modal-title">Feedback</div>
+            <div class="fb-modal-subtitle">Como você avalia o ODIN?</div>
+            <div class="star-rating">
+                <input type="radio" id="star5" name="rating" value="5"><label for="star5">★</label>
+                <input type="radio" id="star4" name="rating" value="4"><label for="star4">★</label>
+                <input type="radio" id="star3" name="rating" value="3"><label for="star3">★</label>
+                <input type="radio" id="star2" name="rating" value="2"><label for="star2">★</label>
+                <input type="radio" id="star1" name="rating" value="1"><label for="star1">★</label>
+            </div>
+            <textarea class="fb-textarea" id="avaliar-texto" placeholder="Conte o que achou (opcional)..."></textarea>
+            <div class="fb-modal-actions">
+                <button class="fb-btn-cancel" onclick="fecharModal('avaliar')">Cancelar</button>
+                <button class="fb-btn-send" onclick="enviarFeedback('avaliar')">Enviar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Melhoria -->
+    <div class="fb-modal-overlay" id="modal-melhoria">
+        <div class="fb-modal">
+            <div class="fb-modal-title">Feedback</div>
+            <div class="fb-modal-subtitle">Qual melhoria você sugere?</div>
+            <textarea class="fb-textarea" id="melhoria-texto" placeholder="Descreva a melhoria que você gostaria de ver..." style="height:120px"></textarea>
+            <div class="fb-modal-actions">
+                <button class="fb-btn-cancel" onclick="fecharModal('melhoria')">Cancelar</button>
+                <button class="fb-btn-send" onclick="enviarFeedback('melhoria')">Enviar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // ── Feedback ───────────────────────────────────────
+    function toggleFeedback() {
+        const sub = document.getElementById('fb-sub-btns');
+        sub.classList.toggle('open');
+    }
+
+    function abrirModal(tipo) {
+        document.getElementById('fb-sub-btns').classList.remove('open');
+        document.getElementById(`modal-${tipo}`).classList.add('open');
+    }
+
+    function fecharModal(tipo) {
+        document.getElementById(`modal-${tipo}`).classList.remove('open');
+    }
+
+    function enviarFeedback(tipo) {
+        if (tipo === 'avaliar') {
+            const nota  = document.querySelector('input[name="rating"]:checked')?.value;
+            const texto = document.getElementById('avaliar-texto').value.trim();
+            if (!nota) { alert('Selecione uma nota antes de enviar!'); return; }
+            fetch('https://odin-backend-rv69.onrender.com/feedback', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tipo: 'avaliacao', nota: Number(nota), texto, pagina: 'index' })
+            });
+        } else {
+            const texto = document.getElementById('melhoria-texto').value.trim();
+            if (!texto) { alert('Descreva a melhoria antes de enviar!'); return; }
+            fetch('https://odin-backend-rv69.onrender.com/feedback', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tipo: 'melhoria', texto, pagina: 'index' })
+            });
+        }
+        fecharModal(tipo);
+        document.querySelectorAll('input[name="rating"]').forEach(r => r.checked = false);
+        document.getElementById('avaliar-texto').value = '';
+        document.getElementById('melhoria-texto').value = '';
+        const t = document.createElement('div');
+        t.textContent = '✓ Feedback enviado! Obrigado 🙏';
+        Object.assign(t.style, {
+            position:'fixed', bottom:'28px', left:'50%', transform:'translateX(-50%)',
+            background:'rgba(37,120,153,0.15)', border:'1px solid rgba(37,120,153,0.4)',
+            color:'#7ab8cc', padding:'11px 20px', borderRadius:'10px',
+            fontFamily:"'Syne',sans-serif", fontSize:'12px', fontWeight:'700',
+            letterSpacing:'0.5px', zIndex:'9999', whiteSpace:'nowrap',
+            transition:'opacity 0.3s ease',
+        });
+        document.body.appendChild(t);
+        setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 400); }, 3000);
+    }
+
+    // Fecha modal ao clicar fora
+    document.querySelectorAll('.fb-modal-overlay').forEach(overlay => {
+        overlay.addEventListener('click', e => {
+            if (e.target === overlay) overlay.classList.remove('open');
+        });
+    });
+    </script>
+
+</body>
 </html>
