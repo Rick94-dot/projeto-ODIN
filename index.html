@@ -1057,19 +1057,22 @@
             abrirPainel();
             toggleClearBtn();
 
-            console.log('[ODIN] ibgeId:', ibgeId);
-
             try {
-                const res  = await fetch(`https://servicodados.ibge.gov.br/api/v2/malhas/municipios/${ibgeId}/metadados`);
-                const data = await res.json();
-                console.log('[ODIN] coordenadas:', data);
-                if (data[0]?.centroide) {
-                    selectedLat = String(data[0].centroide.latitude);
-                    selectedLng = String(data[0].centroide.longitude);
-                    console.log('[ODIN] lat/lng atualizados:', selectedLat, selectedLng);
+                // Extrai nome e UF de "Rio Branco, AC"
+                const partes    = texto.split(', ');
+                const nomeCidade = partes[0].trim();
+                const uf         = (partes[1] || '').trim();
+
+                const geoRes  = await fetch(`https://nominatim.openstreetmap.org/search?city=${encodeURIComponent(nomeCidade)}&state=${encodeURIComponent(uf)}&country=Brazil&format=json&limit=1`, {
+                    headers: { 'Accept-Language': 'pt-BR' }
+                });
+                const geoData = await geoRes.json();
+                if (geoData[0]?.lat) {
+                    selectedLat = geoData[0].lat;
+                    selectedLng = geoData[0].lon;
                 }
             } catch(e) {
-                console.error('[ODIN] erro coordenadas:', e);
+                // mantém fallback de Carapicuíba
             }
         }
 
