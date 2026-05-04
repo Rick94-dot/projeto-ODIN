@@ -342,10 +342,10 @@
 
     <header>
         <img src="PROJETO ODIN LOGO FINAL.png" alt="ODIN" class="logo-header" id="logo-img"
-             onclick="window.location.href='/projeto-ODIN/index.html'"
+             onclick="window.location.href='/index.html'"
              onerror="this.style.display='none';document.getElementById('logo-txt').style.display='block'">
         <span class="logo-fallback-header" id="logo-txt" style="display:none"
-              onclick="window.location.href='/projeto-ODIN/index.html'">ODIN</span>
+              onclick="window.location.href='/index.html'">ODIN</span>
         <div class="header-divider"></div>
         <div class="search-summary" id="search-summary"></div>
         <div class="header-actions">
@@ -358,7 +358,7 @@
                 </svg>
                 <span>Exportar Excel</span>
             </button>
-            <button class="btn-back" onclick="window.location.href='/projeto-ODIN/index.html'">
+            <button class="btn-back" onclick="window.location.href='/index.html'">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M19 12H5M12 19l-7-7 7-7"/>
                 </svg>
@@ -493,7 +493,7 @@
         const API_URL = 'https://odin-backend-rv69.onrender.com';
 
         if (!localStorage.getItem('odin_token')) {
-            window.location.replace('/projeto-ODIN/login.html');
+            window.location.replace('/login.html');
         }
 
         const params        = new URLSearchParams(window.location.search);
@@ -725,7 +725,7 @@
         createStars();
         renderSummary();
         if (!cidade || !operadora) {
-            window.location.replace('/projeto-ODIN/index.html');
+            window.location.replace('/index.html');
         } else {
             buscar();
         }
