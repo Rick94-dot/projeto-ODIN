@@ -56,9 +56,10 @@
             padding: 12px 24px;
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 10px;
+            flex-wrap: wrap;
         }
-        .logo-header { height: 34px; cursor: pointer; flex-shrink: 0; }
+        .logo-header { height: 30px; cursor: pointer; flex-shrink: 0; }
         .logo-fallback-header {
             font-family: 'Syne', sans-serif;
             font-size: 14px; font-weight: 800; letter-spacing: 4px;
@@ -69,17 +70,18 @@
         .header-divider { width: 1px; height: 24px; background: var(--border); flex-shrink: 0; }
 
         .search-summary {
-            display: flex; align-items: center; gap: 6px; flex-wrap: wrap; flex: 1;
+            display: flex; align-items: center; gap: 5px;
+            flex-wrap: wrap; flex: 1; min-width: 0;
         }
         .tag {
-            padding: 4px 10px; border-radius: 20px;
-            font-size: 11px; font-weight: 600; font-family: 'Syne', sans-serif; letter-spacing: 0.3px;
+            padding: 3px 9px; border-radius: 20px;
+            font-size: 10px; font-weight: 600; font-family: 'Syne', sans-serif; letter-spacing: 0.3px;
             border: 1px solid rgba(37,120,153,0.25); color: #7ab8cc; background: rgba(37,120,153,0.06);
-            white-space: nowrap;
+            white-space: nowrap; max-width: 160px; overflow: hidden; text-overflow: ellipsis;
         }
         .tag.pink { border-color: rgba(218,72,149,0.25); color: #e08ab8; background: rgba(218,72,149,0.06); }
 
-        .header-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+        .header-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; margin-left: auto; }
 
         .btn-excel {
             display: flex; align-items: center; gap: 6px;
@@ -317,11 +319,22 @@
         .fb-send { padding: 9px 18px; border-radius: 8px; border: none; background: var(--grad); color: white; font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; transition: filter 0.2s; }
         .fb-send:hover { filter: brightness(1.15); }
 
-        @media (max-width: 480px) {
-            header { padding: 10px 14px; gap: 8px; }
-            .btn-excel span { display: none; }
+        /* ── Responsivo ───────────────────────────────────── */
+        @media (max-width: 768px) {
+            header { padding: 10px 14px; gap: 8px; flex-wrap: wrap; }
+            .header-divider { display: none; }
+            .search-summary { order: 3; width: 100%; }
+            .header-actions { margin-left: 0; }
+            .btn-back span { display: none; }
+            #cards-grid { grid-template-columns: 1fr; }
             main { padding: 20px 14px 60px; }
-            #feedback-widget { top: 12px; right: 12px; }
+            .results-title { font-size: 16px; }
+        }
+
+        @media (max-width: 480px) {
+            .btn-excel span { display: none; }
+            #feedback-widget { top: auto; bottom: 20px; right: 16px; }
+            .tag { max-width: 120px; }
         }
     </style>
 </head>
