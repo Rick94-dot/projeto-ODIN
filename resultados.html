@@ -505,10 +505,11 @@
         const lng           = params.get('lng')           || '-46.8366591';
 
         const ROTAS = {
-            'Odontoprev': { buscar: '/buscar/odontoprev', exportar: '/exportar/odontoprev' },
-            'Unimed':     { buscar: '/buscar/unimed',     exportar: '/exportar/unimed' },
-            'Metlife':    { buscar: '/buscar/metlife',    exportar: '/exportar/metlife' },
-            'Hapvida':    { buscar: '/buscar/hapvida',    exportar: '/exportar/hapvida' },
+            'Odontoprev':  { buscar: '/buscar/odontoprev',  exportar: '/exportar/odontoprev' },
+            'Unimed':      { buscar: '/buscar/unimed',      exportar: '/exportar/unimed' },
+            'Metlife':     { buscar: '/buscar/metlife',     exportar: '/exportar/metlife' },
+            'Hapvida':     { buscar: '/buscar/hapvida',     exportar: '/exportar/hapvida' },
+            'SulAmerica':  { buscar: '/buscar/sulamerica',  exportar: '/exportar/sulamerica' },
         };
         const rota = ROTAS[operadora] || ROTAS['Odontoprev'];
         let totalDentistas = 0;
@@ -591,7 +592,7 @@
             grid.innerHTML = '';
 
             dentistas.forEach((d, i) => {
-                const esps = d.especialidades
+                const esps = (d.especialidades || '')
                     .split('|').map(e => e.trim()).filter(Boolean)
                     .map(e => `<span class="esp-tag">${e}</span>`).join('');
 
@@ -677,7 +678,7 @@
                     'Nome':           d.nome,
                     'CRO':            d.cro || '',
                     'CNPJ':           d.cnpj || '',
-                    'Especialidades': d.especialidades.replace(/\|/g, '/').trim(),
+                    'Especialidades': (d.especialidades || '').replace(/\|/g, '/').trim(),
                     'Telefone':       d.telefone || '',
                     'WhatsApp':       d.whatsapp || '',
                     'Email':          d.email || '',
