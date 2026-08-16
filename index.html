@@ -860,7 +860,7 @@
 
         /* ── Config ──────────────────────────────────────── */
         const IBGE_API = 'https://servicodados.ibge.gov.br/api/v1/localidades/municipios?orderBy=nome';
-        const OPERADORAS = ['Odontoprev', 'Unimed', 'Metlife', 'Hapvida', 'SulAmerica'];
+        const OPERADORAS = ['Odontoprev', 'Unimed', 'Metlife', 'Hapvida', 'SulAmerica', 'Amil'];
 
         const ESPECIALIDADES_POR_OPERADORA = {
             'Odontoprev': [
@@ -926,6 +926,17 @@
                 { label: 'Radiologia com Tomografia',     value: 'radiologia com tomografia' },
                 { label: 'Urgência 24 Hs',                value: 'urgencia 24 hs' },
                 { label: 'Urgência Diurna',               value: 'urgencia diurna' },
+            ],
+            'Amil': [
+                { label: 'Cirurgia / Extração',                    value: 'CIRURGIA EXTRACAO' },
+                { label: 'Clínica Geral',                          value: 'CLINICA GERAL' },
+                { label: 'Endodontia (Canal)',                     value: 'ENDODONTIA CANAL' },
+                { label: 'Odontopediatria',                        value: 'ODONTOPEDIATRIA' },
+                { label: 'Ortodontia',                             value: 'ORTODONTIA' },
+                { label: 'Periodontia (Gengiva)',                  value: 'PERIODONTIA TRATAMENTO DE GENGIVA' },
+                { label: 'Prótese Dentária',                       value: 'PROTESE DENTARIA' },
+                { label: 'Radiologia Odontológica',                value: 'RADIOLOGIA ODONTOLOGICA E IMAGINOLOGIA' },
+                { label: 'Urgência Agendada',                      value: 'URGENCIA EM CONSULTORIO AGENDADA' },
             ],
         };
 
