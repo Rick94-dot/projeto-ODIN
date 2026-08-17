@@ -172,6 +172,13 @@
             font-family: 'Syne', sans-serif; font-size: 10px; font-weight: 700;
             color: var(--border); letter-spacing: 0.5px;
         }
+        .card-op-badge {
+            position: absolute; top: 14px; left: 18px;
+            font-family: 'Syne', sans-serif; font-size: 9px; font-weight: 700;
+            letter-spacing: 0.5px; text-transform: uppercase;
+            padding: 2px 8px; border-radius: 20px; border: 1px solid;
+        }
+        .card-op-badge ~ .card-nome { margin-top: 16px; }
         .card-nome {
             font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700;
             color: white; line-height: 1.3; padding-right: 28px;
@@ -498,9 +505,13 @@
 
         const params        = new URLSearchParams(window.location.search);
         const cidade        = params.get('cidade')        || '';
-        const operadora     = params.get('operadora')     || '';
+        // Suporta o link novo (operadoras=A,B,C) e o formato antigo (operadora=A), pra não quebrar links salvos
+        const operadoras    = params.get('operadoras')
+            ? params.get('operadoras').split(',').filter(Boolean)
+            : (params.get('operadora') ? [params.get('operadora')] : []);
         const especialidade = params.get('especialidade') || '999';
         const espNome       = params.get('espNome')       || 'Todas';
+        const opsNome       = params.get('opsNome')       || operadoras.join(', ');
         const lat           = params.get('lat')           || '-23.519516199999998';
         const lng           = params.get('lng')           || '-46.8366591';
 
@@ -512,8 +523,72 @@
             'SulAmerica':  { buscar: '/buscar/sulamerica',  exportar: '/exportar/sulamerica' },
             'Amil':        { buscar: '/buscar/amil',        exportar: '/exportar/amil' },
         };
-        const rota = ROTAS[operadora] || ROTAS['Odontoprev'];
+
+        // Traduz a especialidade ÚNICA (canônica) escolhida no busca.html para o valor
+        // exato que cada operadora espera. Cada chave canônica pode virar 1+ valores
+        // (ex: "urgencia" vira duas opções diferentes na Metlife).
+        const MAPA_ESPECIALIDADE_POR_OPERADORA = {
+            'Odontoprev': {
+                cirurgia: ['cirurgia'], clinica_geral: ['clinico geral'], endodontia: ['endodontia'],
+                odontopediatria: ['odontopediatria'], ortodontia: ['ortodontia'], periodontia: ['periodontia'],
+                protese: ['protese dentaria'], radiologia: ['radiologia'],
+            },
+            'Unimed': {
+                cirurgia: ['cirurgia'], clinica_geral: ['clinica geral'], dentistica: ['dentistica'],
+                endodontia: ['endodontia'], odontopediatria: ['odontopediatria'], ortodontia: ['ortodontia'],
+                pacientes_especiais: ['pacientes especiais'], periodontia: ['periodontia'], protese: ['protese'],
+                radiologia: ['radiologia'], urgencia: ['urgencia', 'urgencia 24'],
+            },
+            'Metlife': {
+                cirurgia: ['cirurgia'], clinica_geral: ['clinica geral'], dentistica: ['dentistica'],
+                endodontia: ['endodontia'], odontopediatria: ['odontopediatria'], ortodontia: ['ortodontia'],
+                pacientes_especiais: ['pacientes especiais'], periodontia: ['periodontia'], protese: ['protese'],
+                urgencia: ['urgencia', 'urgencia 24 horas', 'urgencia diurna'],
+            },
+            'Hapvida': {
+                cirurgia: ['cirurgia'], clinica_geral: ['clinico geral'], endodontia: ['endodontia'],
+                odontopediatria: ['odontopediatria'], ortodontia: ['ortodontia'], periodontia: ['periodontia'],
+                protese: ['protese dentaria'], radiologia: ['radiologia'],
+            },
+            'SulAmerica': {
+                cirurgia: ['cirurgia'], clinica_geral: ['clinica geral'], dentistica: ['dentistica'],
+                endodontia: ['endodontia'], odontopediatria: ['odontopediatria'], ortodontia: ['ortodontia'],
+                pacientes_especiais: ['pacientes especiais'], periodontia: ['periodontia'], protese: ['protese'],
+                radiologia: ['radiologia', 'radiologia com escaneamento', 'radiologia com tomografia'],
+                urgencia: ['urgencia 24 hs', 'urgencia diurna'],
+            },
+            'Amil': {
+                cirurgia: ['CIRURGIA - EXTRAÇÕES', 'CIRURGIA ESPEC/DIVULG'], clinica_geral: ['CLÍNICA GERAL'],
+                endodontia: ['ENDODONTIA - CANAL'], implantodontia: ['IMPLANTODONTIA'],
+                estetica: ['ODONTOLOGIA ESTÉTICA - CLAREAMENTO'], odontopediatria: ['ODONTOPEDIATRIA'],
+                ortodontia: ['ORTODONTIA'], periodontia: ['PERIODONTIA - TRATAMENTO DE GENGIVA'],
+                protese: ['PRÓTESE DENTÁRIA'],
+            },
+        };
+
+        // Devolve o valor de especialidade certo pra mandar pra uma operadora específica.
+        // Retorna null se essa operadora não tem NENHUMA das especialidades pedidas
+        // (nesse caso, pulamos a chamada pra essa operadora — ela não tem o que buscar).
+        function especialidadeParaOperadora(operadora, especialidadeParam) {
+            if (!especialidadeParam || especialidadeParam === 'todas' || especialidadeParam === '999') {
+                return 'todas';
+            }
+            // Só 1 operadora na busca: o busca.html já mandou o valor no dialeto exato
+            // dela (lista específica), então não precisa traduzir nada.
+            if (operadoras.length === 1) {
+                return especialidadeParam;
+            }
+            const chaves = especialidadeParam.split(',').map(s => s.trim()).filter(Boolean);
+            const mapa   = MAPA_ESPECIALIDADE_POR_OPERADORA[operadora] || {};
+            const valores = [];
+            chaves.forEach(chave => {
+                if (mapa[chave]) valores.push(...mapa[chave]);
+            });
+            return valores.length > 0 ? valores.join(',') : null;
+        }
+
         let totalDentistas = 0;
+        let operadorasComFalha = [];
 
         /* ── Estrelas ─────────────────────────────────────── */
         function createStars() {
@@ -542,12 +617,12 @@
         function renderSummary() {
             document.getElementById('search-summary').innerHTML = `
                 <span class="tag">📍 ${cidade}</span>
-                <span class="tag pink">🏥 ${operadora}</span>
+                <span class="tag pink">🏥 ${opsNome}</span>
                 <span class="tag">🦷 ${espNome}</span>
             `;
         }
 
-        /* ── Busca ────────────────────────────────────────── */
+        /* ── Busca (em todas as operadoras selecionadas, em paralelo) ── */
         async function buscar() {
             document.getElementById('loading').style.display        = 'flex';
             document.getElementById('cards-grid').innerHTML         = '';
@@ -555,37 +630,79 @@
             document.getElementById('results-header').style.display = 'none';
             document.getElementById('sem-resultados').style.display = 'none';
             document.getElementById('btn-excel').disabled           = true;
+            operadorasComFalha = [];
 
-            try {
-                const res  = await fetch(`${API_URL}${rota.buscar}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ cidade, codigoEspecialidade: especialidade, latitude: lat, longitude: lng })
-                });
-                const data = await res.json();
-                document.getElementById('loading').style.display = 'none';
+            const chamadas = operadoras.map(async (op) => {
+                const rota = ROTAS[op];
+                if (!rota) return { op, dentistas: [] };
 
-                if (!data.dentistas || data.dentistas.length === 0) {
-                    document.getElementById('sem-resultados').style.display = 'block';
-                    return;
+                const espParaEssaOp = especialidadeParaOperadora(op, especialidade);
+                if (espParaEssaOp === null) {
+                    // Essa operadora não tem nenhuma das especialidades escolhidas — pula, sem contar como falha
+                    return { op, dentistas: [] };
                 }
 
-                totalDentistas = data.dentistas.length;
+                try {
+                    const res = await fetch(`${API_URL}${rota.buscar}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ cidade, codigoEspecialidade: espParaEssaOp, latitude: lat, longitude: lng })
+                    });
+                    if (!res.ok) throw new Error(`status ${res.status}`);
+                    const data = await res.json();
+                    const dentistas = (data.dentistas || []).map(d => ({ ...d, _operadora: op }));
+                    return { op, dentistas };
+                } catch (err) {
+                    console.error(`Falha ao buscar em ${op}:`, err);
+                    operadorasComFalha.push(op);
+                    return { op, dentistas: [] };
+                }
+            });
 
-                document.getElementById('results-count').textContent    = `${totalDentistas} prestadores encontrados`;
-                document.getElementById('results-title').textContent    = `${cidade} — ${espNome}`;
-                document.getElementById('results-page-info').textContent = '';
-                document.getElementById('results-header').style.display = 'block';
-                document.getElementById('btn-excel').disabled           = false;
+            const resultadosPorOperadora = await Promise.all(chamadas);
+            document.getElementById('loading').style.display = 'none';
 
-                renderCards(data.dentistas);
+            let todos = [];
+            resultadosPorOperadora.forEach(r => { todos = todos.concat(r.dentistas); });
 
-            } catch (err) {
-                document.getElementById('loading').style.display        = 'none';
+            if (todos.length === 0) {
                 document.getElementById('sem-resultados').style.display = 'block';
-                console.error(err);
+                if (operadorasComFalha.length > 0) {
+                    mostrarAvisoFalha();
+                }
+                return;
+            }
+
+            totalDentistas = todos.length;
+
+            document.getElementById('results-count').textContent    = `${totalDentistas} prestadores encontrados`;
+            document.getElementById('results-title').textContent    = `${cidade} — ${espNome}`;
+            document.getElementById('results-page-info').textContent = operadoras.length > 1 ? `${operadoras.length} operadoras` : '';
+            document.getElementById('results-header').style.display = 'block';
+            document.getElementById('btn-excel').disabled           = false;
+
+            renderCards(todos);
+
+            if (operadorasComFalha.length > 0) {
+                mostrarAvisoFalha();
             }
         }
+
+        function mostrarAvisoFalha() {
+            const toast = document.getElementById('toast');
+            toast.style.background = 'rgba(218,72,149,0.12)';
+            toast.style.borderColor = 'rgba(218,72,149,0.4)';
+            toast.style.color = '#e08ab8';
+            toast.textContent = `⚠ Falha ao buscar em: ${operadorasComFalha.join(', ')}`;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 5000);
+        }
+
+        /* ── Cores por operadora (badge no card) ──────────── */
+        const CORES_OPERADORA = {
+            'Odontoprev': '#257899', 'Unimed': '#22c55e', 'Metlife': '#da4895',
+            'Hapvida': '#f59e0b', 'SulAmerica': '#e08ab8', 'Amil': '#7ab8cc',
+        };
 
         /* ── Render cards ─────────────────────────────────── */
         function renderCards(dentistas) {
@@ -611,8 +728,13 @@
                 const card = document.createElement('div');
                 card.className = 'card';
                 card.style.animationDelay = `${i * 0.035}s`;
+                const corOp = CORES_OPERADORA[d._operadora] || '#7a8a98';
+                const badgeOp = (operadoras.length > 1 && d._operadora)
+                    ? `<span class="card-op-badge" style="color:${corOp};border-color:${corOp}66;background:${corOp}1a;">${d._operadora}</span>`
+                    : '';
                 card.innerHTML = `
                     <span class="card-num">#${i + 1}</span>
+                    ${badgeOp}
                     <div class="card-nome">${d.nome}</div>
                     <div class="card-dist">
                         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
@@ -662,20 +784,37 @@
             `;
 
             try {
-                const res  = await fetch(`${API_URL}${rota.exportar}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ cidade, codigoEspecialidade: especialidade, latitude: lat, longitude: lng })
+                const chamadas = operadoras.map(async (op) => {
+                    const rota = ROTAS[op];
+                    if (!rota) return [];
+                    const espParaEssaOp = especialidadeParaOperadora(op, especialidade);
+                    if (espParaEssaOp === null) return [];
+                    try {
+                        const res  = await fetch(`${API_URL}${rota.exportar}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ cidade, codigoEspecialidade: espParaEssaOp, latitude: lat, longitude: lng })
+                        });
+                        if (!res.ok) throw new Error(`status ${res.status}`);
+                        const data = await res.json();
+                        return (data.dentistas || []).map(d => ({ ...d, _operadora: op }));
+                    } catch (err) {
+                        console.error(`Falha ao exportar ${op}:`, err);
+                        return [];
+                    }
                 });
-                const data = await res.json();
 
-                if (!data.dentistas || data.dentistas.length === 0) {
+                const listas = await Promise.all(chamadas);
+                const todos  = listas.flat();
+
+                if (todos.length === 0) {
                     alert('Nenhum dado para exportar.');
                     return;
                 }
 
-                const linhas = data.dentistas.map((d, i) => ({
+                const linhas = todos.map((d, i) => ({
                     '#':              i + 1,
+                    'Operadora':      d._operadora || '',
                     'Nome':           d.nome,
                     'CRO':            d.cro || '',
                     'CNPJ':           d.cnpj || '',
@@ -691,7 +830,7 @@
                 const ws = XLSX.utils.json_to_sheet(linhas);
                 const wb = XLSX.utils.book_new();
                 ws['!cols'] = [
-                    { wch: 5 }, { wch: 35 }, { wch: 10 }, { wch: 18 },
+                    { wch: 5 }, { wch: 14 }, { wch: 35 }, { wch: 10 }, { wch: 18 },
                     { wch: 30 }, { wch: 16 }, { wch: 16 }, { wch: 30 },
                     { wch: 45 }, { wch: 12 }, { wch: 60 },
                 ];
@@ -702,7 +841,10 @@
                 XLSX.writeFile(wb, arquivo);
 
                 const toast = document.getElementById('toast');
-                toast.textContent = `✓ ${data.dentistas.length} prestadores exportados!`;
+                toast.style.background = 'rgba(34,197,94,0.12)';
+                toast.style.borderColor = 'rgba(34,197,94,0.4)';
+                toast.style.color = '#4ade80';
+                toast.textContent = `✓ ${todos.length} prestadores exportados!`;
                 toast.classList.add('show');
                 setTimeout(() => toast.classList.remove('show'), 3500);
 
@@ -726,7 +868,7 @@
         /* ── Init ─────────────────────────────────────────── */
         createStars();
         renderSummary();
-        if (!cidade || !operadora) {
+        if (!cidade || operadoras.length === 0) {
             window.location.replace('/index.html');
         } else {
             buscar();
