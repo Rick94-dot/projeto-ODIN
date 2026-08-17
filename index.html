@@ -314,6 +314,15 @@
             -webkit-text-fill-color: transparent;
         }
 
+        .panel-title-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+        .panel-title-row .panel-title { margin-bottom: 0; }
+
         .operators-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -828,7 +837,10 @@
 
         <!-- Painel de Operadoras -->
         <div id="operator-panel">
-            <div class="panel-title">Selecione a operadora</div>
+            <div class="panel-title-row">
+                <div class="panel-title">Selecione a(s) operadora(s)</div>
+                <span class="all-esp-btn" id="all-ops-btn">Todas</span>
+            </div>
             <div class="operators-grid" id="operators-grid"></div>
 
             <!-- Especialidade -->
@@ -862,6 +874,8 @@
         const IBGE_API = 'https://servicodados.ibge.gov.br/api/v1/localidades/municipios?orderBy=nome';
         const OPERADORAS = ['Odontoprev', 'Unimed', 'Metlife', 'Hapvida', 'SulAmerica', 'Amil'];
 
+        // Lista específica de cada operadora — usada quando SÓ 1 operadora está marcada
+        // (fica exatamente igual ao valor que a busca daquela operadora espera).
         const ESPECIALIDADES_POR_OPERADORA = {
             'Odontoprev': [
                 { label: 'Clínico Geral',    value: 'clinico geral' },
@@ -941,8 +955,27 @@
             ],
         };
 
-        // Especialidades da operadora selecionada (começa vazio)
+        // Lista ÚNICA (canônica) — usada quando 2+ operadoras estão marcadas ao mesmo tempo.
+        // A tradução pro "dialeto" de cada operadora acontece no resultados.html.
+        const ESPECIALIDADES_MASTER = [
+            { label: 'Cirurgia',                  value: 'cirurgia' },
+            { label: 'Clínica Geral',             value: 'clinica_geral' },
+            { label: 'Dentística',                value: 'dentistica' },
+            { label: 'Endodontia',                value: 'endodontia' },
+            { label: 'Implantodontia',            value: 'implantodontia' },
+            { label: 'Odontologia Estética',      value: 'estetica' },
+            { label: 'Odontopediatria',           value: 'odontopediatria' },
+            { label: 'Ortodontia',                value: 'ortodontia' },
+            { label: 'Pacientes Especiais',       value: 'pacientes_especiais' },
+            { label: 'Periodontia',               value: 'periodontia' },
+            { label: 'Prótese',                   value: 'protese' },
+            { label: 'Radiologia',                value: 'radiologia' },
+            { label: 'Urgência',                  value: 'urgencia' },
+        ];
+
+        // Lista efetivamente exibida no momento (muda dinamicamente conforme a seleção de operadoras)
         let ESPECIALIDADES = [];
+
         const MAX_RESULTS = 12;
         const DEBOUNCE_MS = 220;
 
@@ -967,6 +1000,7 @@
         const operatorPanel  = $('operator-panel');
         const specialtySection = $('specialty-section');
         const allEspBtn      = $('all-esp-btn');
+        const allOpsBtn      = $('all-ops-btn');
         const chipsGrid      = $('chips-grid');
         const btnBuscar      = $('btn-buscar');
         const logoImg        = $('logo-img');
@@ -1117,7 +1151,9 @@
             todasEsps = false;
             todasOps  = false;
             allEspBtn.classList.remove('active');
-            document.querySelectorAll('#operators-grid input').forEach(r => r.checked = false);            document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+            allOpsBtn.classList.remove('active');
+            document.querySelectorAll('#operators-grid input').forEach(r => r.checked = false);
+            document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
             toggleClearBtn();
             input.focus();
         }
@@ -1129,14 +1165,14 @@
 
         /* ── Atualiza visibilidade do botão Buscar ─────────── */
         function atualizarBuscar() {
-            const temOp  = !!document.querySelector('#operators-grid input:checked');
+            const temOp  = document.querySelectorAll('#operators-grid input:checked').length > 0;
             const temEsp = todasEsps || selectedEsps.size > 0;
             btnBuscar.classList.toggle('show', temOp && temEsp);
         }
 
-        /* ── Cascata: operadora selecionada → mostra especialidade */
+        /* ── Cascata: pelo menos 1 operadora marcada → mostra especialidade */
         function atualizarEspecialidade() {
-            const temOp = !!document.querySelector('#operators-grid input:checked');
+            const temOp = document.querySelectorAll('#operators-grid input:checked').length > 0;
             specialtySection.classList.toggle('show', temOp);
             if (!temOp) {
                 selectedEsps.clear();
@@ -1159,12 +1195,25 @@
             document.body.classList.remove('panel-open');
         }
 
-        /* ── Renderiza operadoras (radio — seleção única) ─── */
+        /* ── Escolhe a lista de especialidades certa conforme a seleção ─── */
+        function atualizarListaEspecialidades() {
+            const marcadas = [...document.querySelectorAll('#operators-grid input:checked')].map(cb => cb.value);
+            ESPECIALIDADES = (marcadas.length === 1)
+                ? (ESPECIALIDADES_POR_OPERADORA[marcadas[0]] || [])
+                : ESPECIALIDADES_MASTER;
+            // Ao trocar de lista, a seleção anterior de especialidades não é mais válida
+            selectedEsps.clear();
+            todasEsps = false;
+            allEspBtn.classList.remove('active');
+            renderChips();
+        }
+
+        /* ── Renderiza operadoras (checkbox — seleção múltipla) ─── */
         function renderOperadoras() {
             const grid = $('operators-grid');
             grid.innerHTML = OPERADORAS.map(op => `
                 <label class="checkbox-wrapper">
-                    <input type="radio" name="operadora" value="${op}">
+                    <input type="checkbox" name="operadora" value="${op}">
                     <div class="checkmark">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M20 6L9 17L4 12"/>
@@ -1174,19 +1223,23 @@
                 </label>
             `).join('');
             grid.addEventListener('change', () => {
-                const op = document.querySelector('#operators-grid input:checked')?.value;
-                if (op) {
-                    // Atualiza especialidades da operadora selecionada
-                    ESPECIALIDADES = ESPECIALIDADES_POR_OPERADORA[op] || [];
-                    selectedEsps.clear();
-                    todasEsps = false;
-                    allEspBtn.classList.remove('active');
-                    renderChips();
-                }
-                todasOps = false;
+                // Se o usuário desmarcar manualmente alguma, o toggle "Todas" sai do estado ativo
+                const todasMarcadas = document.querySelectorAll('#operators-grid input:checked').length === OPERADORAS.length;
+                todasOps = todasMarcadas;
+                allOpsBtn.classList.toggle('active', todasOps);
+                atualizarListaEspecialidades();
                 atualizarEspecialidade();
             });
         }
+
+        /* ── Toggle "Todas" operadoras ─────────────────────── */
+        allOpsBtn.addEventListener('click', () => {
+            todasOps = !todasOps;
+            allOpsBtn.classList.toggle('active', todasOps);
+            document.querySelectorAll('#operators-grid input').forEach(cb => cb.checked = todasOps);
+            atualizarListaEspecialidades();
+            atualizarEspecialidade();
+        });
 
         /* ── Renderiza chips de especialidade ─────────────── */
         function renderChips() {
@@ -1217,15 +1270,16 @@
 
         /* ── Buscar ───────────────────────────────────────── */
         function executarBusca() {
-            const operadora = document.querySelector('#operators-grid input:checked')?.value;
+            const operadoras = [...document.querySelectorAll('#operators-grid input:checked')].map(cb => cb.value);
             const esps = todasEsps ? ESPECIALIDADES.map(e => e.value) : [...selectedEsps];
-            if (!selectedCity || !operadora || esps.length === 0) return;
+            if (!selectedCity || operadoras.length === 0 || esps.length === 0) return;
 
             const cidadeFormatada = selectedCity.replace(', ', ' - ');
             const espCodigo = todasEsps ? 'todas' : esps.join(',');
             const espNome   = todasEsps ? 'Todas' : esps.map(v => ESPECIALIDADES.find(e => e.value === v)?.label).filter(Boolean).join(', ');
+            const opsNome   = operadoras.join(', ');
 
-            const url = `/resultados.html?cidade=${encodeURIComponent(cidadeFormatada)}&operadora=${encodeURIComponent(operadora)}&especialidade=${encodeURIComponent(espCodigo)}&espNome=${encodeURIComponent(espNome)}&lat=${encodeURIComponent(selectedLat)}&lng=${encodeURIComponent(selectedLng)}`;
+            const url = `/resultados.html?cidade=${encodeURIComponent(cidadeFormatada)}&operadoras=${encodeURIComponent(operadoras.join(','))}&especialidade=${encodeURIComponent(espCodigo)}&espNome=${encodeURIComponent(espNome)}&opsNome=${encodeURIComponent(opsNome)}&lat=${encodeURIComponent(selectedLat)}&lng=${encodeURIComponent(selectedLng)}`;
             window.location.href = url;
         }
 
@@ -1251,6 +1305,7 @@
                 selectedEsps.clear();
                 todasEsps = false; todasOps = false;
                 allEspBtn.classList.remove('active');
+                allOpsBtn.classList.remove('active');
                 document.querySelectorAll('#operators-grid input').forEach(cb => cb.checked = false);
                 document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
             }
